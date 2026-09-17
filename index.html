@@ -1,861 +1,899 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IN2101 OOP with Java - Ultimate Prep</title>
+    <title>OOP Java Learner - Assignment Prep</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        brand: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 900: '#0c4a6e' }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937; }
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap');
         
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        body { font-family: 'Inter', sans-serif; }
+        pre, code { font-family: 'Fira Code', monospace; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
 
-        pre { background-color: #1e293b; color: #38bdf8; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-family: monospace; font-size: 0.9rem; margin-top: 0.5rem; margin-bottom: 0.5rem;}
-        code { font-family: monospace; font-size: 0.95em; }
-        
-        .perspective-1000 { perspective: 1000px; }
-        .transform-style-3d { transform-style: preserve-3d; transition: transform 0.6s; }
-        .backface-hidden { backface-visibility: hidden; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; }
-        .flashcard-back { transform: rotateY(180deg); }
-        .flashcard-container { min-height: 380px; }
+        /* Code Syntax Highlighting Theme */
+        .code-container { background-color: #1e1e1e; color: #d4d4d4; }
+        .token-keyword { color: #569cd6; font-weight: 500; }
+        .token-type { color: #4ec9b0; }
+        .token-string { color: #ce9178; }
+        .token-comment { color: #6a9955; font-style: italic; }
+        .token-method { color: #dcdcaa; }
+        .token-number { color: #b5cea8; }
 
-        .nav-item { transition: all 0.2s ease-in-out; }
-        .nav-item:hover, .nav-item.active { background-color: #e0e7ff; color: #4338ca; border-left: 4px solid #4338ca; }
+        .line-highlight { transition: all 0.3s ease; border-left: 3px solid transparent; }
+        .line-highlight.active { background-color: rgba(14, 165, 233, 0.2); border-left-color: #0ea5e9; }
         
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .modal-bg { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
+        .concept-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .concept-card:hover { transform: translateY(-2px); }
+
+        .tree-line {
+            position: absolute; left: 24px; top: 40px; bottom: 0; width: 2px;
+            background-color: #e2e8f0; z-index: 0;
+        }
+        .dark .tree-line { background-color: #334155; }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 h-screen flex overflow-hidden selection:bg-brand-500 selection:text-white">
 
-    <aside class="w-64 bg-white shadow-xl flex flex-col z-20 hidden md:flex">
-        <div class="p-6 bg-indigo-600 text-white">
-            <h1 class="text-2xl font-bold"><i class="fa-brands fa-java mr-2"></i>OOP Mastery</h1>
-            <p class="text-sm text-indigo-200 mt-1">IN2101 Prep System</p>
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 z-20 hidden md:hidden" onclick="toggleMenu()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 w-72 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-brand-500 text-white p-2 rounded-lg"><i class="fa-solid fa-code"></i></div>
+                <h1 class="font-bold text-xl tracking-tight">OOP Learner</h1>
+            </div>
+            <button class="md:hidden text-slate-500 hover:text-slate-800 dark:hover:text-white" onclick="toggleMenu()">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
         </div>
-        <nav class="flex-1 overflow-y-auto py-4">
-            <a href="#" onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item active flex items-center px-6 py-3 text-gray-700 font-semibold"><i class="fas fa-chart-pie w-6"></i> Dashboard</a>
-            <a href="#" onclick="navigate('learn')" id="nav-learn" class="nav-item flex items-center px-6 py-3 text-gray-700 font-semibold"><i class="fas fa-book-open w-6"></i> Learn Topics</a>
-            <a href="#" onclick="navigate('flashcards')" id="nav-flashcards" class="nav-item flex items-center px-6 py-3 text-gray-700 font-semibold"><i class="fas fa-clone w-6"></i> Flashcards</a>
-            <div class="px-6 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider mt-4">Practice</div>
-            <a href="#" onclick="navigate('quiz', 'all')" id="nav-quiz-all" class="nav-item flex items-center px-6 py-3 text-gray-700 font-semibold"><i class="fas fa-layer-group w-6"></i> All Questions</a>
-            <a href="#" onclick="navigate('mockSetup')" id="nav-mockSetup" class="nav-item flex items-center px-6 py-3 text-gray-700 font-semibold"><i class="fas fa-crosshairs w-6"></i> Custom Mock Exam</a>
-            <a href="#" onclick="navigate('quiz', 'code')" id="nav-quiz-code" class="nav-item flex items-center px-6 py-3 text-gray-700 font-semibold"><i class="fas fa-code w-6"></i> Code Practice</a>
-            <a href="#" onclick="navigate('quiz', 'unanswered')" id="nav-quiz-unanswered" class="nav-item flex items-center px-6 py-3 text-gray-700 font-semibold"><i class="fas fa-question-circle w-6"></i> Unanswered Qs</a>
-            <a href="#" onclick="navigate('quiz', 'mistakes')" id="nav-quiz-mistakes" class="nav-item flex items-center px-6 py-3 text-red-600 font-semibold"><i class="fas fa-fire w-6"></i> My Mistakes</a>
+        
+        <div class="p-4 border-b border-slate-200 dark:border-slate-800 relative">
+            <i class="fa-solid fa-search absolute left-7 top-7 text-slate-400"></i>
+            <input type="text" id="searchInput" placeholder="Search concepts..." class="w-full bg-slate-100 dark:bg-slate-800 text-sm rounded-lg pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-500 transition-shadow dark:text-white" onkeyup="handleSearch()">
+            <div id="searchResults" class="absolute left-4 right-4 top-14 bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 rounded-lg max-h-60 overflow-y-auto hidden z-50"></div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-1" id="nav-links">
+            <!-- Dynamic Nav populated by JS -->
         </nav>
-        <div class="p-4 border-t">
-            <button onclick="showResetModal()" class="w-full py-2 text-sm text-red-500 hover:bg-red-50 rounded transition"><i class="fas fa-trash-alt mr-2"></i>Reset Progress</button>
+        
+        <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Theme</span>
+            <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                <i id="theme-icon" class="fa-solid fa-moon"></i>
+            </button>
         </div>
     </aside>
 
-    <div class="md:hidden fixed w-full bg-indigo-600 text-white p-4 flex justify-between items-center z-30 shadow-md">
-        <h1 class="text-xl font-bold"><i class="fa-brands fa-java mr-2"></i>OOP Mastery</h1>
-        <button onclick="document.querySelector('aside').classList.toggle('hidden'); document.querySelector('aside').classList.toggle('absolute'); document.querySelector('aside').classList.toggle('h-full');" class="text-white text-2xl"><i class="fas fa-bars"></i></button>
-    </div>
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Mobile Header -->
+        <header class="md:hidden bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 p-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-brand-500 text-white p-1.5 rounded"><i class="fa-solid fa-code text-sm"></i></div>
+                <h1 class="font-bold text-lg">OOP Learner</h1>
+            </div>
+            <button onclick="toggleMenu()" class="text-slate-600 dark:text-slate-300 p-2">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </header>
 
-    <main class="flex-1 overflow-y-auto bg-gray-50 p-6 md:p-10 pt-20 md:pt-10" id="main-content">
-        <!-- Content injected here via JS -->
+        <!-- Main Scrollable Area -->
+        <div id="content-area" class="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10 lg:px-20 scroll-smooth">
+            <!-- Dynamic Content Injected Here -->
+        </div>
     </main>
 
-    <!-- Custom Reset Modal -->
-    <div id="reset-modal" class="fixed inset-0 z-50 hidden modal-bg flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-center transform transition-all">
-            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-3xl">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Reset All Progress?</h3>
-            <p class="text-gray-500 mb-6">This will permanently delete all your quiz stats, mastered topics, and recorded mistakes. You cannot undo this action.</p>
-            <div class="flex gap-3 justify-center">
-                <button onclick="hideResetModal()" class="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Cancel</button>
-                <button onclick="confirmReset()" class="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">Yes, Reset Data</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const topicsDB = [
-            {
-                id: "intro_java", title: "1. Intro to Java & JVM",
-                explanation: "Java is an object-oriented, portable, and multithreaded language. The JVM (Java Virtual Machine) executes bytecodes. JDK (Java Development Kit) contains the JRE (Java Runtime Environment) and development tools. JRE contains the JVM and library classes.",
-                techDef: "A high-level language utilizing Write Once, Run Anywhere (WORA) capability achieved through bytecode compilation and JVM interpretation.",
-                purpose: "To allow cross-platform execution of code without recompilation.",
-                syntax: "public class HelloWorld {\n  public static void main(String[] args) {\n    System.out.println(\"Hello\");\n  }\n}",
-                example: "Compiling: javac HelloWorld.java (produces .class file). Running: java HelloWorld.",
-                mistakes: "Forgetting that the file name must exactly match the public class name.",
-                memoryTrick: "JDK > JRE > JVM. (Alphabetical order reversed: K -> E -> M).",
-                examFocus: "Differences between JVM, JRE, JDK, and phases (Edit -> Compile -> Execute)."
-            },
-            {
-                id: "variables_casting", title: "2. Variables, Operators & Casting",
-                explanation: "Java has 8 primitive types. Local variables MUST be initialized. Type casting converts one type to another. Logical AND (&&) short-circuits, Bitwise AND (&) checks both sides.",
-                techDef: "Implicit casting (Widening) is automatic. Explicit casting (Narrowing) requires a cast operator.",
-                purpose: "To manage memory efficiently and perform arithmetic across different numeric boundaries.",
-                syntax: "int a = 5;\ndouble b = a; // Implicit\nint c = (int) 5.5; // Explicit",
-                example: "Integer division: 5 / 2 = 2. Bitwise: 10 & 11 = 10. Logical: (x > 5 && y == 8).",
-                mistakes: "Assuming 5/2 gives 2.5. Using uninitialized local variables.",
-                memoryTrick: "Widening = pouring small cup into large bucket. && = Lazy (Short-circuit). & = Hardworker (Checks both).",
-                examFocus: "Predicting outputs of mixed-mode arithmetic, Bitwise vs Logical AND."
-            },
-            {
-                id: "arrays", title: "3. Arrays & Multidimensional Arrays",
-                explanation: "Arrays store multiple values of the same type in contiguous memory. 2D arrays are essentially 'arrays of arrays'.",
-                techDef: "Fixed-size data structure indexed from 0 to length-1.",
-                purpose: "To store lists or grids of data efficiently.",
-                syntax: "int[] arr = new int[5];\nint[][] matrix = {{1, 2}, {3, 4}};",
-                example: "matrix.length gets rows. matrix[0].length gets columns of first row.",
-                mistakes: "Trying to access arr[arr.length] throws ArrayIndexOutOfBoundsException.",
-                memoryTrick: "Length of 2D array = Number of rows. Length of row 0 = Number of columns.",
-                examFocus: "Array initialization syntax and multi-dimensional length properties."
-            },
-            {
-                id: "classes_objects", title: "4. Classes, Objects & Constructors",
-                explanation: "A class is a blueprint. An object is an instance. Constructors initialize state. 'this' refers to the current object.",
-                techDef: "Constructors have the EXACT same name as the class and NO return type.",
-                purpose: "To model real-world entities.",
-                syntax: "class Dog {\n  Dog() { this(5); } // Chaining\n  Dog(int age) { ... }\n}",
-                example: "Dog dog = new Dog(); // Declares reference, creates object.",
-                mistakes: "Putting a return type (like 'void') on a constructor makes it a regular method!",
-                memoryTrick: "Constructors CONSTRUCT. Methods RETURN.",
-                examFocus: "Constructor overloading, constructor chaining using this(), default values."
-            },
-            {
-                id: "inheritance", title: "5. Inheritance (IS-A) & super",
-                explanation: "Subclass inherits from superclass. Single, Multilevel, Hierarchical inheritance. NO multiple inheritance with classes.",
-                techDef: "Extending a class using 'extends'. 'super' accesses parent members/constructors.",
-                purpose: "Code reusability and IS-A relationships.",
-                syntax: "class Dog extends Animal { \n  Dog() { super(); }\n}",
-                example: "super.color accesses parent's color variable.",
-                mistakes: "Confusing IS-A (Inheritance) with HAS-A (Composition).",
-                memoryTrick: "Inheritance = 'Extends' = 'IS-A'. Composition = 'HAS-A'.",
-                examFocus: "Diamond problem, 'super' keyword, implicit super() calls."
-            },
-            {
-                id: "polymorphism", title: "6. Polymorphism (Overload/Override)",
-                explanation: "Polymorphism means 'many forms'. Static (Overloading) happens at compile-time. Dynamic (Overriding) happens at run-time.",
-                techDef: "Overloading: Same name, different parameters. Overriding: Exact same signature, covariant return type.",
-                purpose: "Flexible code execution and dynamic dispatch.",
-                syntax: "// Override\n@Override\npublic void eat() { ... }",
-                example: "Animal a = new Dog(); a.eat(); // Calls Dog's eat() (Upcasting).",
-                mistakes: "Making an overriding method more restrictive (e.g., parent public, child protected).",
-                memoryTrick: "OverLOADING = Loading params. OverRIDING = Riding over parent.",
-                examFocus: "Rules of overriding, access modifiers, Upcasting/Downcasting."
-            },
-            {
-                id: "abstraction", title: "7. Abstraction & Interfaces",
-                explanation: "Hiding implementation. Abstract classes are partial blueprints. Interfaces are 100% abstract contracts.",
-                techDef: "Abstract class: Cannot instantiate. Interface vars: public static final. Methods: public abstract.",
-                purpose: "Force subclasses to implement specific behaviors.",
-                syntax: "abstract class Shape { abstract void draw(); }\ninterface Pet { void play(); }",
-                example: "class Circle extends Shape { void draw() { ... } }",
-                mistakes: "Trying to instantiate an abstract class (`new Shape()`).",
-                memoryTrick: "Abstract classes = Partial blueprint. Interfaces = Strict contract.",
-                examFocus: "Interface variable defaults, multiple implementation."
-            },
-            {
-                id: "encapsulation", title: "8. Encapsulation & Inner Classes",
-                explanation: "Bundling data, restricting access via private variables and public getters/setters. Inner classes allow logical grouping.",
-                techDef: "Access levels: private (class), default (package), protected (pkg + subclass), public (all).",
-                purpose: "Data hiding. Inner classes access outer class private members.",
-                syntax: "private int age;\nclass Outer { class Inner { ... } }",
-                example: "Account class protecting balance from negative numbers.",
-                mistakes: "Leaving variables default when they should be private.",
-                memoryTrick: "private = room, default = house, protected = family, public = street.",
-                examFocus: "Access modifier visibility tables, nested vs local vs anonymous inner classes."
-            },
-            {
-                id: "strings", title: "9. Strings, Builder & Buffer",
-                explanation: "Strings are immutable (carved in stone). StringBuilder is mutable (whiteboard).",
-                techDef: "Modifying String creates new object. `==` compares addresses, `.equals()` compares content.",
-                purpose: "Strings for caching. Builders for fast string manipulation.",
-                syntax: "StringBuilder sb = new StringBuilder(\"Java\");",
-                example: "sb.append(\" Python\").reverse();",
-                mistakes: "Using `==` to compare String content.",
-                memoryTrick: "String = Stone. StringBuilder = Whiteboard.",
-                examFocus: "Output of `==` vs `.equals()`, StringBuilder chaining."
-            },
-            {
-                id: "exceptions", title: "10. Exception Handling",
-                explanation: "Handling runtime errors. Checked (compile-time) must be caught/declared. Unchecked (runtime) are logic errors.",
-                techDef: "try-catch-finally. 'throw' throws object, 'throws' declares in signature.",
-                purpose: "Prevent program crashes.",
-                syntax: "try { ... } catch(Exception e) { ... } finally { ... }",
-                example: "throw new InvalidWeightException(\"Too light\");",
-                mistakes: "Superclass catch (Exception) BEFORE subclass catch (IOException).",
-                memoryTrick: "Try (to do it) -> Catch (error) -> Finally (clean up).",
-                examFocus: "Catch ordering, Checked vs Unchecked, overriding with exceptions."
-            },
-            {
-                id: "threads", title: "11. Multithreading",
-                explanation: "Concurrent execution. Extend Thread or implement Runnable.",
-                techDef: "States: New, Runnable, Running, Waiting, Dead. Call `start()` to begin.",
-                purpose: "Max CPU utilization.",
-                syntax: "new Thread(new MyRunnable()).start();",
-                example: "Thread.sleep(1000); Thread.yield();",
-                mistakes: "Calling `.run()` instead of `.start()`.",
-                memoryTrick: "Wait for the START gun (`start()`), don't just RUN.",
-                examFocus: "Thread states, `yield()` vs `sleep()`, `synchronized`."
-            },
-            {
-                id: "io_generics", title: "12. File I/O, Generics & Enums",
-                explanation: "I/O handles files. Generics ensure type safety. Enums are fixed constants.",
-                techDef: "FileWriter(name, true) appends. Generics `<T extends Number>`. Enums implicitly static/final.",
-                purpose: "Data persistence, compile-time safety.",
-                syntax: "enum Dir { NORTH, SOUTH; }\nList<String> list = new ArrayList<>();",
-                example: "BufferedReader br = new BufferedReader(new FileReader(\"f.txt\"));",
-                mistakes: "Forgetting to close streams (leaks).",
-                memoryTrick: "FileWriter true = Truly append. Generics <T> = Template.",
-                examFocus: "Appending files, Enum private constructors, Bounded Generics."
-            }
-        ];
+        // --- DATABASE ---
+        // Created strictly from provided Lab 01 to 11 materials.
+        
+        const DB = {
+            navStructure: [
+                { id: 'dashboard', label: 'Dashboard', icon: 'fa-home', type: 'core' },
+                { label: 'Priority: Exam Focus', type: 'header' },
+                { id: 'concept_exceptions', label: 'Exception Handling', icon: 'fa-triangle-exclamation', type: 'concept' },
+                { id: 'concept_threads', label: 'Threads & Sync', icon: 'fa-microchip', type: 'concept' },
+                { id: 'concept_strings', label: 'Strings & Builder', icon: 'fa-font', type: 'concept' },
+                { id: 'concept_files', label: 'File Handling', icon: 'fa-file-lines', type: 'concept' },
+                { label: 'Core OOP Foundations', type: 'header' },
+                { id: 'concept_classes', label: 'Classes & Objects', icon: 'fa-cube', type: 'concept' },
+                { id: 'concept_encapsulation', label: 'Encapsulation', icon: 'fa-box-archive', type: 'concept' },
+                { id: 'concept_inheritance', label: 'Inheritance', icon: 'fa-sitemap', type: 'concept' },
+                { id: 'concept_abstraction', label: 'Abstraction & Interfaces', icon: 'fa-ghost', type: 'concept' },
+                { label: 'Interactive Learning', type: 'header' },
+                { id: 'code_tracer', label: 'Trace Execution Flow', icon: 'fa-play', type: 'core' },
+                { id: 'comparisons', label: 'Concept Comparisons', icon: 'fa-code-compare', type: 'core' },
+                { id: 'common_errors', label: 'Why Does It Fail?', icon: 'fa-bug', type: 'core' },
+                { id: 'read_code', label: 'How to Read Code', icon: 'fa-glasses', type: 'core' },
+                { label: 'Revision', type: 'header' },
+                { id: 'must_remember', label: 'Must Remember (Exam)', icon: 'fa-bolt', type: 'core' },
+            ],
 
-        const questionsDB = [
-            // --- Intro, JVM, JDK, Variables, Operators (Lectures 1,2,4, Lab 1,2,3,4) ---
-            { id: 101, topic: "intro_java", type: "mcq", difficulty: "easy", text: "What is the primary role of the Java Virtual Machine (JVM)?", options: ["Compiling Java source code into bytecode", "Executing Java bytecode on a specific platform", "Providing development tools like debuggers", "Writing code once and never running it"], answer: 1, exp: "The JVM interprets and executes bytecode (.class files) generated by the compiler. It is the core of Java's WORA capability." },
-            { id: 102, topic: "intro_java", type: "mcq", difficulty: "medium", text: "Which of the following correctly orders the Java execution phases?", options: ["Edit -> Execute -> Compile", "Compile -> Edit -> Execute", "Edit -> Compile -> Execute", "Execute -> Compile -> Edit"], answer: 2, exp: "First, you write (Edit) source code (.java). Then, you Compile it into bytecode (.class). Finally, the JVM Executes it." },
-            { id: 103, topic: "intro_java", type: "mcq", difficulty: "medium", text: "Is it possible to have multiple non-public classes in a single Java source file?", options: ["Yes, but the file name must match one of them", "Yes, and the file name must match the ONLY public class", "No, each file can strictly have only one class", "No, all classes in a file must be public"], answer: 1, exp: "A .java file can contain multiple classes, but ONLY ONE can be public, and the file name MUST match that public class." },
-            { id: 104, topic: "intro_java", type: "mcq", difficulty: "hard", text: "Which component actually contains the JVM?", options: ["JDK contains JVM but not JRE", "JRE contains JVM and library classes", "JVM contains JRE and JDK", "Only the JDK contains the JVM; the JRE does not"], answer: 1, exp: "The JRE (Java Runtime Environment) contains the JVM along with core library classes. The JDK contains the JRE plus development tools." },
-            { id: 105, topic: "variables_casting", type: "code", difficulty: "medium", text: "What is the output?\n<code>double res = 5 / 2;\nSystem.out.println(res);</code>", options: ["2.5", "2", "2.0", "Compiler Error"], answer: 2, exp: "5 and 2 are integers, so integer division occurs (5/2 = 2). The result 2 is then implicitly cast to double (2.0) upon assignment.", trick: "Math evaluates on the right BEFORE assignment." },
-            { id: 106, topic: "variables_casting", type: "code", difficulty: "hard", text: "What is the output of the following bitwise operation? (From Lab 4)\n<code>int x = 10, y = 11;\nint a = x & y;\nSystem.out.println(a);</code>", options: ["true", "10", "11", "Compiler Error"], answer: 1, exp: "10 in binary is 1010. 11 in binary is 1011. Bitwise AND (&): 1010 & 1011 = 1010 (which is 10 in decimal)." },
-            { id: 107, topic: "variables_casting", type: "code", difficulty: "hard", text: "Consider the following method:\n<code>public void check() {\n  int x;\n  System.out.println(x);\n}</code>\nWhat happens?", options: ["Prints 0", "Prints null", "Compile-time error", "Runtime error"], answer: 2, exp: "Local variables (inside methods) do NOT get default values in Java. Attempting to use them before initialization causes a compile-time error." },
-            { id: 108, topic: "variables_casting", type: "mcq", difficulty: "medium", text: "What is the difference between the Short-circuit AND (&&) and Logical AND (&)?", options: ["They are exactly the same", "&& checks both operands always; & skips the right if the left is false", "&& skips the right operand if the left is false; & always checks both", "&& is for bitwise math; & is for booleans"], answer: 2, exp: "&& (Short-circuit) stops evaluating if the left side is false. & (Logical/Bitwise) strictly evaluates both sides regardless." },
-            { id: 109, topic: "variables_casting", type: "code", difficulty: "easy", text: "Which of the following represents 'Narrowing' (Explicit Casting)?", options: ["double x = 5;", "int x = (int) 5.9;", "long x = 10;", "float x = 5;"], answer: 1, exp: "Converting from a larger precision (double) to a smaller precision (int) requires an explicit cast and drops the decimal." },
-            { id: 110, topic: "variables_casting", type: "mcq", difficulty: "easy", text: "What is the default value of a boolean instance variable?", options: ["true", "false", "0", "null"], answer: 1, exp: "Instance variables get default values. For boolean, it is false." },
+            concepts: {
+                'concept_exceptions': {
+                    title: 'Java Exception Handling',
+                    source: 'Lab 08',
+                    simpleDef: 'A way to handle runtime errors gracefully so your program doesn\'t suddenly crash.',
+                    techDef: 'An exception is an event that disrupts the normal flow of the program. Exception handling uses try, catch, finally, throw, and throws to maintain program execution.',
+                    why: 'To prevent application crashes from unpredictable events (like dividing by zero, missing files, or bad user input) and to show user-friendly error messages.',
+                    syntax: `try {\n    // Code that might crash\n} catch (ExceptionType e) {\n    // What to do if it crashes\n} finally {\n    // Code that ALWAYS runs\n}`,
+                    rules: [
+                        'Checked Exceptions (e.g., IOException, FileNotFoundException) MUST be caught or declared with "throws". Checked at compile-time.',
+                        'Unchecked Exceptions (e.g., ArithmeticException, InputMismatchException) happen at runtime. Handling is optional but recommended.',
+                        'If using multiple catch blocks, you MUST catch specific exceptions before general ones (e.g., ArithmeticException BEFORE Exception).',
+                        'The "finally" block executes regardless of whether an error occurred or not (useful for closing files/scanners).'
+                    ],
+                    mistake: {
+                        wrong: `try {\n    int x = 10 / 0;\n} catch (Exception e) {\n    System.out.println("Error");\n} catch (ArithmeticException e) { \n    // COMPILE ERROR: Unreachable code\n}`,
+                        right: `try {\n    int x = 10 / 0;\n} catch (ArithmeticException e) {\n    System.out.println("Math Error");\n} catch (Exception e) {\n    System.out.println("General Error");\n}`,
+                        why: 'Exception is the parent of ArithmeticException. If you catch Exception first, it swallows all errors, making the second block impossible to reach. Java compiler blocks this.'
+                    },
+                    codeSnippet: {
+                        code: `import java.util.Scanner;\npublic class ErrorTest {\n    public static void main(String[] args) {\n        try {\n            int num = 12;\n            int div = 0; // Imagine user typed 0\n            int result = num / div;\n            System.out.println(result);\n        } catch (ArithmeticException e) {\n            System.out.println("Cannot divide by zero.");\n        } finally {\n            System.out.println("Cleanup done.");\n        }\n    }\n}`,
+                        steps: [
+                            { line: 3, desc: "Try block starts", text: "The JVM enters the risky code section." },
+                            { line: 6, desc: "Exception Thrown", text: "12 / 0 is mathematically impossible. The JVM stops executing the try block immediately and throws an ArithmeticException object." },
+                            { line: 7, desc: "Skipped", text: "This line is skipped because the error happened on the line above." },
+                            { line: 8, desc: "Catch Block Match", text: "The JVM looks for a catch block matching ArithmeticException. It finds it." },
+                            { line: 9, desc: "Handling", text: "Executes our custom error message. The program is saved from crashing." },
+                            { line: 10, desc: "Finally Block", text: "Regardless of the error, the finally block executes. Used to release resources." }
+                        ]
+                    }
+                },
+                'concept_threads': {
+                    title: 'Threads & Synchronization',
+                    source: 'Lab 09',
+                    simpleDef: 'Doing multiple tasks in the background at the exact same time.',
+                    techDef: 'A Thread is a lightweight sub-process with its own execution path. Synchronization controls access to shared resources to prevent data corruption.',
+                    why: 'To improve efficiency. Without threads, a program executes line-by-line. If one line takes 10 seconds to download a file, the whole app freezes. Threads prevent freezing.',
+                    syntax: `class MyTask extends Thread {\n    public void run() {\n        // background task\n    }\n}\n// In main:\nMyTask t1 = new MyTask();\nt1.start(); // NEVER call run() directly`,
+                    rules: [
+                        'Two ways to create: Extend "Thread" class OR Implement "Runnable" interface.',
+                        'ALWAYS use .start() to launch a thread. If you call .run() directly, it just acts like a normal method on the main thread (no multithreading).',
+                        'Thread.sleep(ms) pauses a thread. It throws InterruptedException, so it must be inside a try-catch block.',
+                        '"synchronized" keyword locks a method/block so only one thread can use it at a time.'
+                    ],
+                    mistake: {
+                        wrong: `MyThread t1 = new MyThread();\nt1.run(); // WRONG`,
+                        right: `MyThread t1 = new MyThread();\nt1.start(); // CORRECT`,
+                        why: 'Calling run() directly executes the code synchronously on the main thread. start() tells the JVM to allocate a new background thread and THEN the JVM calls run() internally.'
+                    },
+                    codeSnippet: {
+                        code: `class Count {\n    // Only 1 thread can enter this at a time\n    synchronized void printCount(int n) {\n        for(int i=1; i<=2; i++) {\n            System.out.println(n * i);\n            try { Thread.sleep(100); } catch(Exception e){}\n        }\n    }\n}\nclass MyThread extends Thread {\n    Count c;\n    MyThread(Count c) { this.c = c; }\n    public void run() { c.printCount(10); }\n}\n// Main: Count obj = new Count(); Thread t1 = new MyThread(obj); t1.start();`,
+                        steps: [
+                            { line: 13, desc: "Thread Starts", text: "t1.start() is called. The JVM moves t1 to the RUNNABLE state and invokes its run() method." },
+                            { line: 2, desc: "Sync Lock Acquired", text: "t1 enters printCount. Because it's 'synchronized', t1 locks the 'Count obj'. If t2 tries to enter now, t2 gets BLOCKED." },
+                            { line: 3, desc: "Loop execution", text: "Prints values. sleep(100) pauses the thread. IMPORTANT: sleep() does NOT release the synchronized lock." },
+                            { line: 7, desc: "Lock Released", text: "t1 finishes the method. The lock is released. Now other waiting threads can enter." }
+                        ]
+                    },
+                },
+                'concept_strings': {
+                    title: 'Java String, StringBuilder & == vs equals()',
+                    source: 'Lab 10',
+                    simpleDef: 'Strings hold text. Normal Strings cannot be changed once made (Immutable). StringBuilder can be modified (Mutable).',
+                    techDef: 'String objects are immutable and stored in the String Constant Pool. StringBuilder objects are mutable, stored on the Heap, and modify the same memory block.',
+                    why: 'Immutability makes Strings secure and memory-efficient. StringBuilder is used for performance when modifying a string thousands of times in a loop.',
+                    syntax: `String s = "Hello";\ns = s.concat(" World"); // Must reassign\n\nStringBuilder sb = new StringBuilder("Hello");\nsb.append(" World"); // Modifies in place`,
+                    rules: [
+                        'String methods (concat, toLowerCase, trim) do NOT modify the original string. They return a brand new String object.',
+                        '"==" compares MEMORY ADDRESSES (Are they the exact same object in memory?).',
+                        '".equals()" compares the ACTUAL TEXT CONTENT (Do they have the same characters?).',
+                        'StringBuilder methods: append(), insert(), reverse(), delete().'
+                    ],
+                    mistake: {
+                        wrong: `String str = "Java";\nstr.concat(" Programming");\nSystem.out.println(str); // Prints "Java"`,
+                        right: `String str = "Java";\nstr = str.concat(" Programming");\nSystem.out.println(str); // Prints "Java Programming"`,
+                        why: 'Strings are immutable. str.concat() created a new String in memory, but because you didn\'t assign it to a variable (str = ...), the new string was lost.'
+                    },
+                    codeSnippet: {
+                        code: `String s1 = "admin";\nString s2 = new String("admin");\n\nif (s1 == s2) {\n    System.out.println("Same Memory");\n}\nif (s1.equals(s2)) {\n    System.out.println("Same Text");\n}\n\nStringBuilder sb = new StringBuilder("Race");\nsb.append("car");\nsb.reverse();`,
+                        steps: [
+                            { line: 0, desc: "String Pool", text: '"admin" is created in the special String Constant Pool. s1 points there.' },
+                            { line: 1, desc: "Heap Creation", text: 'The "new" keyword forces Java to create a brand new object on the Heap. s2 points to the Heap.' },
+                            { line: 3, desc: "== Comparison", text: 'Compares references. s1 (Pool) and s2 (Heap) have different memory addresses. Returns FALSE.' },
+                            { line: 6, desc: "equals() Comparison", text: 'Compares text. "admin" and "admin" have the exact same characters. Returns TRUE.' },
+                            { line: 10, desc: "Mutable Object", text: 'StringBuilder creates a mutable array of characters on the heap.' },
+                            { line: 11, desc: "In-Place Edit", text: 'append() directly modifies the existing object in memory without creating a new one. Very fast.' }
+                        ]
+                    }
+                },
+                'concept_files': {
+                    title: 'File Handling (I/O)',
+                    source: 'Lab 11',
+                    simpleDef: 'Reading data from a hard drive or writing data to a hard drive.',
+                    techDef: 'Java uses streams for I/O. File class handles path properties. Scanner or BufferedReader are used to read character streams from files.',
+                    why: 'Variables stored in RAM are deleted when the program stops. We use File I/O to permanently save data (like a database or text file).',
+                    syntax: `File f = new File("data.txt");\ntry {\n    Scanner sc = new Scanner(f);\n    while(sc.hasNextLine()) { ... }\n} catch (Exception e) {}`,
+                    rules: [
+                        'Always check if a file exists using file.exists() before trying to read it.',
+                        'File handling throws checked exceptions (like FileNotFoundException). You MUST wrap it in a try-catch block.',
+                        'You must always .close() the Scanner or stream when finished to release the operating system\'s lock on the file.'
+                    ]
+                },
+                'concept_classes': {
+                    title: 'Classes & Objects',
+                    source: 'Lab 02, 03',
+                    simpleDef: 'A Class is a blueprint. An Object is a real thing built from that blueprint.',
+                    techDef: 'A class is a user-defined blueprint encapsulating state (variables) and behavior (methods). An object is a runtime instance of a class allocated on the heap.',
+                    why: 'To group related data and actions together, making code modular and modeling real-world entities.',
+                    syntax: `class Dog { \n    String breed; \n    void bark() {} \n}\n// Create object:\nDog myDog = new Dog();`,
+                    rules: [
+                        'Variables inside a class are called "instance variables" (or attributes/fields).',
+                        'Functions inside a class are called "methods" (behavior).',
+                        'Objects are created using the "new" keyword.'
+                    ]
+                },
+                'concept_encapsulation': {
+                    title: 'Encapsulation',
+                    source: 'Lab 06',
+                    simpleDef: 'Hiding variables inside a class and protecting them using getter and setter methods.',
+                    techDef: 'Bundling data and methods into a single unit and restricting direct access to object state to prevent invalid modifications (Data Hiding).',
+                    why: 'To protect data. E.g., preventing a user from directly setting an account balance to a negative number.',
+                    syntax: `private double balance;\npublic void setBalance(double b) {\n    if (b > 0) this.balance = b;\n}`,
+                    rules: [
+                        'Declare instance variables as private.',
+                        'Provide public getter and setter methods.',
+                        'Put validation logic inside the setter.'
+                    ]
+                },
+                'concept_inheritance': {
+                    title: 'Inheritance & super()',
+                    source: 'Lab 06',
+                    simpleDef: 'A child class takes all the features of a parent class so you don\'t have to write the code twice.',
+                    techDef: 'A mechanism where a subclass inherits properties and behaviors of a superclass, establishing an IS-A relationship.',
+                    why: 'Code reusability. If Desktop and Laptop share PC properties, put common code in PC and inherit it.',
+                    syntax: `class Laptop extends PC {\n    Laptop() {\n        super(); // Calls parent constructor\n    }\n}`,
+                    rules: [
+                        'Use "extends" keyword. Java supports Single inheritance (one parent per class) but allows Multilevel inheritance.',
+                        'Constructors are NOT inherited, but the child constructor MUST call the parent constructor using super() as its first line.',
+                        'If you don\'t write super(), Java inserts it implicitly.'
+                    ]
+                },
+                'concept_abstraction': {
+                    title: 'Abstraction & Interfaces',
+                    source: 'Lab 06, 07',
+                    simpleDef: 'Hiding the complex code and only showing the essential features. (Like driving a car without knowing how the engine works).',
+                    techDef: 'Abstract classes and Interfaces define templates. They declare methods without implementation, forcing subclasses to implement them.',
+                    why: 'To force a standard structure on multiple classes. E.g., If you have Circle and Square, force both to have a getArea() method.',
+                    syntax: `abstract class Shape { \n    abstract void getArea(); \n}\nclass Circle extends Shape {\n    void getArea() { /* circle logic */ }\n}`,
+                    rules: [
+                        'You cannot create an object of an Abstract Class or Interface (e.g., new Shape() is an error).',
+                        'Abstract methods have no body. Subclasses MUST override and implement them.',
+                        'Use "implements" for interfaces. A class can implement multiple interfaces.'
+                    ]
+                }
+            },
 
-            // --- Arrays (Lab 5) ---
-            { id: 201, topic: "arrays", type: "code", difficulty: "medium", text: "Given: <code>int[][] arr = {{1, 2, 3}, {4, 5}, {6, 7, 8, 9}};</code>\nWhat does <code>arr.length</code> evaluate to?", options: ["9", "3", "4", "Compiler Error"], answer: 1, exp: "In a 2D array, .length returns the number of rows (the size of the outer array), which is 3." },
-            { id: 202, topic: "arrays", type: "code", difficulty: "hard", text: "Given: <code>int[][] arr = {{1, 2}, {3, 4, 5}};</code>\nHow do you get the length of the second row?", options: ["arr.length(1)", "arr[1].length", "arr.length[1]", "arr[2].length"], answer: 1, exp: "Java uses 0-based indexing. The second row is arr[1]. Its length is accessed via arr[1].length." },
-            { id: 203, topic: "arrays", type: "mcq", difficulty: "easy", text: "Which of the following is the correct way to declare and allocate a 1D integer array of size 5?", options: ["int[] arr = new int(5);", "int arr[] = new int[5];", "int arr = new int[5];", "int[5] arr = new int[];"], answer: 1, exp: "Square brackets must be used for size allocation: new int[5]." },
-            
-            // --- Classes, Objects, Constructors (Lectures 4, 9, Lab 2, 3) ---
-            { id: 301, topic: "classes_objects", type: "code", difficulty: "medium", text: "What is wrong with this constructor?\n<code>class Box {\n  public void Box() {\n    System.out.println(\"Created\");\n  }\n}</code>", options: ["Must be private", "Missing 'class' keyword", "It has a return type 'void', making it a normal method", "Nothing is wrong"], answer: 2, exp: "Constructors strictly CANNOT have a return type, not even void. Adding 'void' turns it into a standard method." },
-            { id: 302, topic: "classes_objects", type: "mcq", difficulty: "medium", text: "Which memory area holds newly created object instances in Java?", options: ["Stack", "Heap", "Method Area", "Registers"], answer: 1, exp: "Objects and their instance variables are dynamically allocated in the Heap memory." },
-            { id: 303, topic: "classes_objects", type: "code", difficulty: "hard", text: "Analyze the code:\n<code>class Test {\n  Test() { this(5); System.out.print(\"A\"); }\n  Test(int x) { System.out.print(\"B\"); }\n}\nnew Test();</code>\nWhat is the output?", options: ["A", "B", "AB", "BA"], answer: 3, exp: "new Test() hits default constructor. this(5) immediately routes to the int constructor, printing 'B'. It then returns and prints 'A'. Output: BA." },
-            { id: 304, topic: "classes_objects", type: "mcq", difficulty: "medium", text: "When does the Java compiler automatically provide a default constructor?", options: ["Always", "Only if the class has no variables", "Only if the programmer does not write ANY constructors", "When the class is marked public"], answer: 2, exp: "The compiler provides a no-arg default constructor ONLY if you don't define any constructors yourself." },
-            { id: 305, topic: "classes_objects", type: "mcq", difficulty: "easy", text: "Which keyword is used to access the current object's instance variables when they are shadowed by method parameters?", options: ["super", "this", "static", "final"], answer: 1, exp: "The 'this' keyword refers to the current object instance." },
-            { id: 306, topic: "classes_objects", type: "mcq", difficulty: "hard", text: "Are constructors inherited by subclasses?", options: ["Yes, automatically", "Yes, if they are public", "No, they are never inherited", "No, unless marked with 'super'"], answer: 2, exp: "Constructors are NOT inherited. Subclasses must define their own constructors, though they can call the parent's via super()." },
+            executionFlows: [
+                { id: 'flow_exception', label: 'Exceptions: Try/Catch' },
+                { id: 'flow_thread', label: 'Threads: Synchronization' },
+                { id: 'flow_string', label: 'Strings: == vs equals' },
+            ],
 
-            // --- Inheritance, super, Polymorphism (Lectures 6, 7, 8, 9, Lab 6) ---
-            { id: 401, topic: "inheritance", type: "mcq", difficulty: "medium", text: "Does Java support multiple inheritance with classes? (e.g., class C extends A, B)", options: ["Yes, natively", "Yes, using super()", "No, to avoid the Diamond Problem", "No, it requires the 'implements' keyword"], answer: 2, exp: "Java prevents a class from extending multiple classes to avoid ambiguity (Diamond Problem). Multiple inheritance is achieved via Interfaces." },
-            { id: 402, topic: "inheritance", type: "mcq", difficulty: "easy", text: "The relationship 'A Triangle IS-A Shape' is modeled using:", options: ["Composition", "Aggregation", "Inheritance", "Encapsulation"], answer: 2, exp: "Inheritance represents IS-A relationships. Composition represents HAS-A." },
-            { id: 403, topic: "inheritance", type: "code", difficulty: "hard", text: "Predict output:\n<code>class A { String color = \"white\"; }\nclass B extends A { \n  String color = \"black\"; \n  void show() { System.out.print(super.color + color); } \n}\nnew B().show();</code>", options: ["blackblack", "whitewhite", "whiteblack", "blackwhite"], answer: 2, exp: "super.color gets parent A's color ('white'). color gets current B's color ('black')." },
-            { id: 404, topic: "polymorphism", type: "mcq", difficulty: "medium", text: "Which of the following is a strict rule for Method Overriding?", options: ["Method name must be different", "Parameter list must be different", "Return type must be the same or covariant (subclass)", "Access modifier must be more restrictive"], answer: 2, exp: "Overriding requires the exact same signature. Return type must be covariant. Access cannot be more restrictive." },
-            { id: 405, topic: "polymorphism", type: "code", difficulty: "medium", text: "<code>Animal a = new Dog();</code>\nThis statement is an example of:", options: ["Downcasting", "Upcasting", "Method Overloading", "Encapsulation"], answer: 1, exp: "Assigning a child object (Dog) to a parent reference (Animal) is Upcasting, done implicitly." },
-            { id: 406, topic: "polymorphism", type: "code", difficulty: "hard", text: "Can you override a `static` method in Java?", options: ["Yes", "Yes, if the subclass method is static", "No, static methods belong to the class and are resolved at compile-time", "No, unless marked abstract"], answer: 2, exp: "Static methods are bound at compile-time (Static Binding). They can be hidden, but not overridden (Dynamic Binding)." },
-            { id: 407, topic: "polymorphism", type: "mcq", difficulty: "hard", text: "What happens if you attempt explicit Downcasting incorrectly? e.g., <code>Animal a = new Animal(); Dog d = (Dog) a;</code>", options: ["Compile error", "ClassCastException at runtime", "NullPointerException", "Executes successfully"], answer: 1, exp: "Explicit downcasting compiles, but if the actual object in memory isn't the target type, it throws ClassCastException at runtime." },
+            comparisons: [
+                {
+                    title: 'Method Overloading vs Overriding',
+                    left: { name: 'Overloading', def: 'Same method name, different parameters inside the SAME class.', rule: 'Compile-time polymorphism.', code: 'void add(int a)\nvoid add(int a, int b)' },
+                    right: { name: 'Overriding', def: 'Child class changes the implementation of a Parent class method.', rule: 'Runtime polymorphism. Same parameters required.', code: 'class Parent { void print(){} }\nclass Child extends Parent {\n  @Override void print(){} \n}' }
+                },
+                {
+                    title: 'String vs StringBuilder',
+                    left: { name: 'String', def: 'Immutable. Cannot be changed after creation.', rule: 'Stored in String Constant Pool. Thread-safe.', code: 'String s = "Hello";\ns.concat(" World"); // Result lost' },
+                    right: { name: 'StringBuilder', def: 'Mutable. Can be changed in place.', rule: 'Stored on Heap. Fast, but not thread-safe.', code: 'StringBuilder sb = new StringBuilder("Hello");\nsb.append(" World"); // Modifies original' }
+                },
+                {
+                    title: 'this() vs super()',
+                    left: { name: 'this()', def: 'Calls another constructor within the SAME class.', rule: 'Must be the first line in the constructor.', code: 'MyClass() { this(10); }' },
+                    right: { name: 'super()', def: 'Calls the constructor of the PARENT class.', rule: 'Must be the first line in the constructor.', code: 'Child() { super(); }' }
+                }
+            ],
 
-            // --- Abstraction, Interfaces, Encapsulation (Lectures 6, 7, 8, Lab 6, 7) ---
-            { id: 501, topic: "abstraction", type: "mcq", difficulty: "easy", text: "Can you instantiate an abstract class using the 'new' keyword?", options: ["Yes", "No", "Only if it has a constructor", "Only via super()"], answer: 1, exp: "Abstract classes act as partial blueprints and cannot be instantiated directly." },
-            { id: 502, topic: "abstraction", type: "mcq", difficulty: "medium", text: "By default, variables inside an Interface are:", options: ["private and final", "protected and static", "public, static, and final", "default"], answer: 2, exp: "Interface variables are implicitly constants: public, static, and final." },
-            { id: 503, topic: "encapsulation", type: "mcq", difficulty: "medium", text: "If a variable has no access modifier (e.g., `int x;`), what is its access level?", options: ["Private", "Protected", "Default (Package-private)", "Public"], answer: 2, exp: "No modifier means 'default' access: visible only to classes within the exact same package." },
-            { id: 504, topic: "encapsulation", type: "mcq", difficulty: "easy", text: "Which modifier restricts visibility strictly to the defining class?", options: ["public", "protected", "default", "private"], answer: 3, exp: "Private encapsulates data, making it invisible outside the specific class." },
-            { id: 505, topic: "abstraction", type: "mcq", difficulty: "hard", text: "If a concrete class extends an abstract class, what MUST it do?", options: ["Declare itself abstract", "Implement only the public methods", "Implement all inherited abstract methods", "Override all constructors"], answer: 2, exp: "The first concrete subclass in an inheritance tree MUST implement all abstract methods from its parent." },
-            { id: 506, topic: "encapsulation", type: "code", difficulty: "medium", text: "What is an Anonymous Inner Class?", options: ["A class with no methods", "An inner class declared without a name, instantiated immediately", "A class with a private name", "A class in a secret package"], answer: 1, exp: "Anonymous inner classes (Lab 7) are declared and instantiated in a single expression, often used for listeners or one-time interface implementations." },
+            errors: [
+                {
+                    title: 'The "Unreachable Catch" Trap',
+                    wrong: `try {\n    int a = 10/0;\n} catch (Exception e) {\n} catch (ArithmeticException e) {\n}`,
+                    right: `try {\n    int a = 10/0;\n} catch (ArithmeticException e) {\n} catch (Exception e) {\n}`,
+                    why: 'Java checks catch blocks top-to-bottom. Since `Exception` is the parent of all exceptions, it acts like a giant net. If you put it first, the `ArithmeticException` block is impossible to reach. The compiler flags this as an error.'
+                },
+                {
+                    title: 'The "Lost String" Trap',
+                    wrong: `String s = "Java";\ns.trim();\ns.toUpperCase();`,
+                    right: `String s = "Java";\ns = s.trim();\ns = s.toUpperCase();`,
+                    why: 'Strings are immutable. Methods like trim() and toUpperCase() return a BRAND NEW string. If you don\'t assign the result back to a variable using `=`, the modified text is instantly discarded.'
+                },
+                {
+                    title: 'Calling run() instead of start()',
+                    wrong: `MyThread t1 = new MyThread();\nt1.run();`,
+                    right: `MyThread t1 = new MyThread();\nt1.start();`,
+                    why: 'Calling run() directly is just a normal method call. It blocks the main program and does NOT run in the background. Calling start() tells the JVM to branch off a new background thread.'
+                }
+            ],
 
-            // --- Strings, StringBuilder, Enums (Lecture 9, Lab 10) ---
-            { id: 601, topic: "strings", type: "code", difficulty: "medium", text: "Predict output:\n<code>String a = new String(\"Hello\");\nString b = new String(\"Hello\");\nSystem.out.println(a == b);</code>", options: ["true", "false", "Compiler Error", "0"], answer: 1, exp: "The 'new' keyword forces creation of two distinct objects in heap memory. '==' compares memory addresses, not text content." },
-            { id: 602, topic: "strings", type: "code", difficulty: "hard", text: "Predict output:\n<code>StringBuilder sb = new StringBuilder(\"Hello\");\nsb.append(\" World\").reverse().replace(1, 2, \"Earth\");\nSystem.out.println(sb);</code>", options: ["Hello World", "dlrow olleH", "dEarthrow olleH", "Compiler Error"], answer: 2, exp: "Hello -> Hello World -> dlrow olleH -> Replace index 1 to 2 ('l') with 'Earth' -> dEarthrow olleH." },
-            { id: 603, topic: "strings", type: "code", difficulty: "medium", text: "What happens when you execute: `String s = \"Java\"; s.concat(\" OOP\");`", options: ["s becomes \"Java OOP\"", "s remains \"Java\"", "Compiler error", "Throws exception"], answer: 1, exp: "Strings are immutable. `concat()` creates a new string, but because it's not assigned back to `s`, `s` remains unchanged." },
-            { id: 604, topic: "io_generics", type: "mcq", difficulty: "medium", text: "What is the key difference between StringBuilder and StringBuffer?", options: ["Builder is for strings, Buffer is for ints", "Buffer is thread-safe (synchronized); Builder is not and thus faster", "Builder is thread-safe; Buffer is not", "There is no difference"], answer: 1, exp: "StringBuffer is synchronized for multi-threading, making it slightly slower than StringBuilder, which is not." },
-            { id: 605, topic: "io_generics", type: "mcq", difficulty: "hard", text: "What access modifier MUST Enum constructors have?", options: ["public", "protected", "private or default", "abstract"], answer: 2, exp: "Enum constructors are used internally to initialize constant values and must be private or package-default to prevent external instantiation." },
-
-            // --- Exceptions (Lecture 10, Lab 8) ---
-            { id: 701, topic: "exceptions", type: "code", difficulty: "hard", text: "What is wrong with this catch block ordering?\n<code>try { ... } \ncatch(Exception e) { } \ncatch(IOException e) { }</code>", options: ["Missing finally block", "IOException cannot be caught", "Subclass exception (IOException) must be caught BEFORE superclass exception (Exception)", "Nothing is wrong"], answer: 2, exp: "Exception is the superclass. If caught first, the specific IOException block becomes unreachable, causing a compile error." },
-            { id: 702, topic: "exceptions", type: "mcq", difficulty: "medium", text: "Which keyword indicates a method might throw an exception?", options: ["throw", "throws", "catch", "finally"], answer: 1, exp: "`throws` declares exceptions in the method signature. `throw` actually throws the object inside the method." },
-            { id: 703, topic: "exceptions", type: "mcq", difficulty: "easy", text: "Are NullPointerException and ArithmeticException checked or unchecked?", options: ["Checked", "Unchecked", "Both", "Neither"], answer: 1, exp: "They extend RuntimeException, making them unchecked. The compiler doesn't force you to catch them." },
-            { id: 704, topic: "exceptions", type: "mcq", difficulty: "hard", text: "If a superclass method throws `IOException`, can the overridden subclass method throw `Exception`?", options: ["Yes", "No, it can only throw the same or narrower exceptions", "No, overridden methods cannot throw exceptions", "Yes, if it uses a try-catch block"], answer: 1, exp: "Overriding methods cannot throw BROADER checked exceptions. Exception is broader than IOException, so this is illegal." },
-            { id: 705, topic: "exceptions", type: "mcq", difficulty: "medium", text: "When does a `finally` block execute?", options: ["Only if an exception occurs", "Only if no exception occurs", "Always, regardless of exceptions (unless System.exit is called)", "Only for Checked Exceptions"], answer: 2, exp: "The finally block is used for cleanup (like closing files) and executes whether an exception was thrown or caught or not." },
-
-            // --- Threads (Lecture 11, Lab 9) ---
-            { id: 801, topic: "threads", type: "mcq", difficulty: "easy", text: "How do you correctly begin execution of a Thread?", options: ["thread.run()", "thread.start()", "thread.init()", "thread.execute()"], answer: 1, exp: "Calling start() creates a new call stack and then invokes run(). Calling run() directly just runs sequentially on the main thread." },
-            { id: 802, topic: "threads", type: "mcq", difficulty: "medium", text: "What does `Thread.yield()` do?", options: ["Kills the thread", "Waits for another thread to die", "Pauses current thread to allow other threads of EQUAL priority to run", "Sleeps for 1000ms"], answer: 2, exp: "yield() pauses execution to give a chance to other threads of the same priority." },
-            { id: 803, topic: "threads", type: "code", difficulty: "medium", text: "Two threads share an object with a `synchronized` method. What happens?", options: ["Both execute simultaneously", "Only one thread can execute it at a time (Locking)", "Deadlock immediately", "Compiler error"], answer: 1, exp: "The 'synchronized' keyword locks the object. Prevents race conditions." },
-            { id: 804, topic: "threads", type: "mcq", difficulty: "hard", text: "What exception is thrown if you call `start()` on a Thread in the 'Dead' state?", options: ["InterruptedException", "IllegalThreadStateException", "DeadThreadException", "No exception"], answer: 1, exp: "Once dead, a thread cannot be restarted. Attempting to do so throws a RuntimeException: IllegalThreadStateException." },
-            { id: 805, topic: "threads", type: "mcq", difficulty: "medium", text: "What are the two ways to create a thread in Java?", options: ["Extend Thread or extend Runnable", "Implement Thread or implement Runnable", "Extend Thread or implement Runnable", "Extend Process or implement Thread"], answer: 2, exp: "You can either extend the java.lang.Thread class or implement the java.lang.Runnable interface." },
-
-            // --- I/O Handling & Generics (Lectures 12, 13, Lab 11) ---
-            { id: 901, topic: "io_generics", type: "code", difficulty: "medium", text: "What does the 'true' parameter do: <code>new FileWriter(\"test.txt\", true);</code>", options: ["Creates the file if missing", "Enables binary writing", "Opens the file in append mode (doesn't overwrite)", "Closes automatically"], answer: 2, exp: "The boolean dictates append (true) vs overwrite (false/default)." },
-            { id: 902, topic: "io_generics", type: "mcq", difficulty: "easy", text: "Which class is best for reading whole lines of text efficiently?", options: ["FileReader", "FileInputStream", "BufferedReader", "PrintWriter"], answer: 2, exp: "BufferedReader provides the readLine() method for efficient line-by-line reading." },
-            { id: 903, topic: "io_generics", type: "code", difficulty: "hard", text: "Analyze: <code>class GenTest &lt;T extends Number&gt; { ... }\nGenTest&lt;String&gt; obj = new GenTest&lt;&gt;();</code>", options: ["Compiles successfully", "Generates runtime exception", "Compiler Error: String is not within bounds", "String converts to Number"], answer: 2, exp: "Bounded generic '<T extends Number>' means T must be a subclass of Number. String is not a Number." },
-            { id: 904, topic: "io_generics", type: "mcq", difficulty: "medium", text: "What is the primary benefit of Generics?", options: ["Faster execution", "Compile-time type safety (prevents ClassCastException)", "Automatic memory management", "Multiple inheritance"], answer: 1, exp: "Generics catch type mismatch errors at compile-time rather than crashing at runtime." },
-            { id: 905, topic: "io_generics", type: "code", difficulty: "hard", text: "How do you check if a file exists using the java.io.File class?", options: ["file.check()", "file.exists()", "file.isFile()", "Both exists() and isFile() should be used"], answer: 3, exp: "To be safe, you should check file.exists() AND file.isFile() to ensure it's not a directory." },
-            { id: 906, topic: "io_generics", type: "mcq", difficulty: "medium", text: "In Event-Driven GUI Programming, what interface must a class implement to handle button clicks?", options: ["MouseListener", "ButtonListener", "ActionListener", "ClickListener"], answer: 2, exp: "Buttons generate Action Events, handled by classes implementing ActionListener and its actionPerformed() method." }
-        ];
-
-        const flashcardsDB = [
-            { front: "WORA", back: "Write Once, Run Anywhere. Enabled by compiling to Bytecode and running on JVM." },
-            { front: "JDK vs JRE vs JVM", back: "JDK (Dev tools + JRE). JRE (Runtime + JVM). JVM (Executes bytecode)." },
-            { front: "Implicit Casting", back: "Automatic conversion from smaller to larger type (int -> double). Safe." },
-            { front: "Explicit Casting", back: "Manual conversion larger to smaller type. Syntax: (int) 5.5; Risks data loss." },
-            { front: "Local Variable Default", back: "None! Local variables must be initialized manually to avoid compile error." },
-            { front: "Constructors", back: "Initializes objects. Exact same name as class. NO RETURN TYPE." },
-            { front: "Method Overloading", back: "Compile-time polymorphism. Same method name, DIFFERENT parameters." },
-            { front: "Method Overriding", back: "Run-time polymorphism. Child redefines parent method with EXACT same signature." },
-            { front: "super keyword", back: "Refers to immediate parent class instance variables, methods, or constructors." },
-            { front: "this keyword", back: "Refers to the current object instance invoking the method/constructor." },
-            { front: "Abstract Class", back: "Marked 'abstract'. Cannot be instantiated. Can have abstract and concrete methods." },
-            { front: "Interface", back: "100% abstract contract. Vars: public static final. Methods: public abstract." },
-            { front: "Encapsulation", back: "Data hiding. Make variables 'private', provide 'public' getters/setters." },
-            { front: "String vs StringBuilder", back: "String is Immutable (Stone). StringBuilder is Mutable (Whiteboard)." },
-            { front: "== vs .equals()", back: "== compares memory addresses. .equals() compares actual object content/text." },
-            { front: "Checked Exception", back: "Checked at compile time (e.g., IOException). Must be caught or declared." },
-            { front: "Unchecked Exception", back: "Runtime exceptions (NullPointer). Not forced to catch." },
-            { front: "finally block", back: "Executes always (cleanup), regardless of exception occurrence." },
-            { front: "Thread start() vs run()", back: "start() spins up new thread. run() executes sequentially on main thread." },
-            { front: "Thread.yield()", back: "Pauses current thread for others of SAME priority." },
-            { front: "synchronized", back: "Locks object/method so only one thread can access at a time." },
-            { front: "Generics <T>", back: "Compile-time type safety. Prevents ClassCastException." },
-            { front: "Bounded Generic", back: "<T extends Number>. Restricts generic to specific class/subclasses." },
-            { front: "Enum", back: "Group of constants. Implicitly static/final. Constructors must be private." },
-            { front: "FileWriter Append", back: "new FileWriter(\"file.txt\", true); // 'true' enables append mode." },
-            { front: "Logical vs Short-Circuit AND", back: "& evaluates both always. && stops if left side is false." },
-            { front: "Diamond Problem", back: "Ambiguity from multiple inheritance. Java prevents this by disallowing multiple class inheritance." },
-            { front: "Constructor Chaining", back: "Calling one constructor from another using this() or super()." },
-            { front: "Dynamic Binding", back: "Method resolution at runtime (Overriding)." },
-            { front: "Static Binding", back: "Method resolution at compile-time (Overloading, static methods)." },
-            { front: "Anonymous Inner Class", back: "Class declared and instantiated in one expression without a name." },
-            { front: "2D Array Length", back: "arr.length = rows. arr[0].length = columns in row 0." },
-            { front: "ClassCastException", back: "Runtime error when explicit downcasting fails because object is not target type." }
-        ];
-
-        let state = {
-            view: 'dashboard',
-            quizMode: null,
-            currentQuestionIndex: 0,
-            quizQuestions: [],
-            score: 0,
-            flashcardIndex: 0,
-            mockConfig: { count: 25, difficulty: 'all' }
+            mustRemember: [
+                { title: 'Class vs Object', text: 'Class is a blueprint. Object is an instance created in memory using "new".' },
+                { title: 'Constructor', text: 'Special block invoked when an object is created. Has NO return type. Matches class name.' },
+                { title: 'Encapsulation', text: 'Private variables + Public getters/setters. Protects data state.' },
+                { title: 'Inheritance', text: '"extends" keyword. Child gets parent features. Promotes code reuse.' },
+                { title: 'super keyword', text: 'Refers to immediate parent class. super() calls parent constructor.' },
+                { title: 'this keyword', text: 'Refers to the current object executing the method.' },
+                { title: 'Method Overriding', text: 'Child provides specific implementation for parent method. Runtime.' },
+                { title: 'Method Overloading', text: 'Same name, different parameters. Compile-time.' },
+                { title: 'final keyword', text: 'Variable = constant. Method = cannot override. Class = cannot inherit.' },
+                { title: 'static keyword', text: 'Belongs to the Class, shared by all objects. Access via ClassName.method()' },
+                { title: 'Checked vs Unchecked', text: 'Checked (IOException) = compiler forces try-catch. Unchecked (Arithmetic) = runtime errors, optional catch.' },
+                { title: '== vs equals()', text: '== compares memory address. .equals() compares text content.' }
+            ]
         };
 
-        let userData = {
-            progress: { topicsRead: [], questionsAttempted: 0, questionsCorrect: 0, flashcardsViewed: 0 },
-            mistakes: {}, // questionId: errorCount
-            mastered: {}, 
-            attempted: {} 
-        };
-
-        if (localStorage.getItem('oopMasteryDataV3')) {
-            userData = JSON.parse(localStorage.getItem('oopMasteryDataV3'));
-            if(!userData.mistakes) userData.mistakes = {};
-            if(!userData.mastered) userData.mastered = {};
-            if(!userData.attempted) userData.attempted = {};
+        // --- SYNTAX HIGHLIGHTER ---
+        function highlightCode(code) {
+            if(!code) return '';
+            let html = code
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\b(class|public|private|protected|static|void|int|double|boolean|String|new|try|catch|finally|throw|throws|extends|implements|abstract|interface|return|this|super|if|else|while|for)\b/g, '<span class="token-keyword">$1</span>')
+                .replace(/\b(System|out|println|print|Exception|ArithmeticException|Thread|Runnable|Scanner|File|StringBuilder|Math)\b/g, '<span class="token-type">$1</span>')
+                .replace(/("[^"]*")/g, '<span class="token-string">$1</span>')
+                .replace(/(\/\/.*)/g, '<span class="token-comment">$1</span>')
+                .replace(/\b(\d+)\b/g, '<span class="token-number">$1</span>');
+            return html;
         }
 
-        function saveData() {
-            localStorage.setItem('oopMasteryDataV3', JSON.stringify(userData));
+        // --- RENDER FUNCTIONS ---
+        const contentArea = document.getElementById('content-area');
+
+        function renderDashboard() {
+            let html = `
+                <div class="max-w-5xl mx-auto animate-fade-in pb-20">
+                    <div class="mb-10">
+                        <span class="bg-brand-100 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Targeting Sept 18 Exam</span>
+                        <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mt-4 tracking-tight leading-tight">Master OOP Java. <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-indigo-500">Understand the Code.</span></h1>
+                        <p class="text-slate-600 dark:text-slate-400 mt-4 text-lg max-w-2xl">This is not a quiz app. This platform analyzes the code structures from your labs, breaks them down line-by-line, and shows you exactly how the JVM executes them.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+                            <div class="text-3xl font-black text-brand-500 mb-1">11</div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wide">Labs Analyzed</div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+                            <div class="text-3xl font-black text-brand-500 mb-1">4</div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wide">Exam Topics</div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center cursor-pointer hover:border-brand-300 transition-colors" onclick="switchView('code_tracer')">
+                            <div class="text-3xl font-black text-brand-500 mb-1"><i class="fa-solid fa-play text-2xl"></i></div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wide">Trace Code</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-brand-500 to-indigo-600 p-5 rounded-2xl shadow-md text-center text-white cursor-pointer hover:shadow-lg transition-transform hover:-translate-y-1" onclick="switchView('must_remember')">
+                            <div class="text-3xl font-black mb-1"><i class="fa-solid fa-bolt text-2xl"></i></div>
+                            <div class="text-xs font-bold uppercase tracking-wide">Quick Revise</div>
+                        </div>
+                    </div>
+
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-3"><i class="fa-solid fa-triangle-exclamation text-brand-500"></i> High Priority Exam Focus</h2>
+                    <div class="grid md:grid-cols-2 gap-4 mb-12">
+                        ${['concept_exceptions', 'concept_threads', 'concept_strings', 'concept_files'].map(id => {
+                            const c = DB.concepts[id];
+                            return `
+                            <div onclick="switchView('${id}')" class="concept-card bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer hover:border-brand-400 dark:hover:border-brand-500 relative overflow-hidden group">
+                                <div class="absolute top-0 left-0 w-1 h-full bg-brand-500 transform -translate-x-full group-hover:translate-x-0 transition-transform"></div>
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="font-bold text-lg group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">${c.title}</h3>
+                                    <span class="text-[10px] font-bold px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded">${c.source}</span>
+                                </div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">${c.simpleDef}</p>
+                            </div>`
+                        }).join('')}
+                    </div>
+
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-3"><i class="fa-solid fa-cube text-slate-400"></i> Core OOP Foundations</h2>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        ${['concept_classes', 'concept_encapsulation', 'concept_inheritance', 'concept_abstraction'].map(id => {
+                            const c = DB.concepts[id];
+                            return `
+                            <div onclick="switchView('${id}')" class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-slate-300 dark:hover:border-slate-500 transition-colors">
+                                <h3 class="font-bold text-slate-800 dark:text-slate-200 mb-2">${c.title}</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${c.simpleDef}</p>
+                            </div>`
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            contentArea.innerHTML = html;
         }
 
-        function showResetModal() { document.getElementById('reset-modal').classList.remove('hidden'); }
-        function hideResetModal() { document.getElementById('reset-modal').classList.add('hidden'); }
+        function renderConcept(id) {
+            const c = DB.concepts[id];
+            if(!c) return;
 
-        function confirmReset() {
-            userData = { progress: { topicsRead: [], questionsAttempted: 0, questionsCorrect: 0, flashcardsViewed: 0 }, mistakes: {}, mastered: {}, attempted: {} };
-            saveData();
-            hideResetModal();
-            navigate('dashboard');
-        }
-
-        function navigate(view, meta = null) {
-            state.view = view;
-            
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            let navId = `nav-${view}`;
-            if(view === 'quiz') navId = `nav-quiz-${meta}`;
-            if(document.getElementById(navId)) document.getElementById(navId).classList.add('active');
-
-            document.querySelector('aside').classList.add('hidden');
-            
-            const main = document.getElementById('main-content');
-            main.innerHTML = '';
-            main.className = 'flex-1 overflow-y-auto bg-gray-50 p-6 md:p-10 pt-20 md:pt-10 fade-in';
-
-            if (view === 'dashboard') renderDashboard(main);
-            else if (view === 'learn') renderLearn(main);
-            else if (view === 'flashcards') renderFlashcards(main);
-            else if (view === 'mockSetup') renderMockSetup(main);
-            else if (view === 'quiz') {
-                state.quizMode = meta;
-                startQuiz(main);
-            }
-        }
-
-        function renderDashboard(container) {
-            let acc = userData.progress.questionsAttempted > 0 
-                ? Math.round((userData.progress.questionsCorrect / userData.progress.questionsAttempted) * 100) 
-                : 0;
-            
-            let weakTopicsCount = Object.keys(userData.mistakes).length;
-            let unansweredCount = questionsDB.filter(q => !userData.attempted[q.id]).length;
-
-            container.innerHTML = `
-                <div class="max-w-6xl mx-auto">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back! <i class="fas fa-graduation-cap text-indigo-500"></i></h2>
-                    <p class="text-gray-600 mb-8">IN2101 Object-Oriented Programming Study Tracker</p>
+            let html = `
+                <div class="max-w-4xl mx-auto animate-fade-in pb-20">
+                    <div class="mb-4">
+                        <span class="text-xs font-bold px-2 py-1 bg-brand-100 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 rounded uppercase tracking-wider">${c.source}</span>
+                    </div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-8 tracking-tight">${c.title}</h1>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Questions Done</p>
-                                <h3 class="text-2xl font-bold text-gray-800">${userData.progress.questionsAttempted} <span class="text-sm text-gray-400 font-normal">/ ${questionsDB.length}</span></h3>
+                    <div class="grid md:grid-cols-2 gap-6 mb-10">
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm relative">
+                            <div class="absolute -top-3 left-6 bg-brand-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Simple Idea</div>
+                            <p class="text-lg text-slate-700 dark:text-slate-200 mt-2 font-medium leading-relaxed">${c.simpleDef}</p>
+                            <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Technical Definition</h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">${c.techDef}</p>
                             </div>
-                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl"><i class="fas fa-pencil-alt"></i></div>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Accuracy</p>
-                                <h3 class="text-2xl font-bold text-gray-800">${acc}%</h3>
-                            </div>
-                            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl"><i class="fas fa-bullseye"></i></div>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Unanswered</p>
-                                <h3 class="text-2xl font-bold text-gray-800">${unansweredCount}</h3>
-                            </div>
-                            <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-xl"><i class="fas fa-question"></i></div>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Weak Areas</p>
-                                <h3 class="text-2xl font-bold text-red-600">${weakTopicsCount} <span class="text-sm font-normal text-gray-500">Qs</span></h3>
-                            </div>
-                            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl"><i class="fas fa-exclamation-triangle"></i></div>
+
+                        <div class="bg-brand-50 dark:bg-brand-900/10 p-6 rounded-2xl border border-brand-100 dark:border-brand-900/30 flex flex-col justify-center">
+                            <h3 class="text-sm font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-circle-question"></i> Why do we use it?
+                            </h3>
+                            <p class="text-slate-700 dark:text-slate-300">${c.why}</p>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 class="text-xl font-bold mb-4"><i class="fas fa-rocket text-indigo-500 mr-2"></i> Targeted Practice</h3>
-                            <div class="space-y-3">
-                                <button onclick="navigate('mockSetup')" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold py-3 px-4 rounded-lg flex justify-between items-center transition">
-                                    <span>Build Custom Mock Exam</span> <i class="fas fa-sliders-h"></i>
-                                </button>
-                                <button onclick="navigate('quiz', 'unanswered')" class="w-full bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-semibold py-3 px-4 rounded-lg flex justify-between items-center transition">
-                                    <span>Practice Unanswered (${unansweredCount})</span> <i class="fas fa-arrow-right"></i>
-                                </button>
-                                <button onclick="navigate('quiz', 'mistakes')" class="w-full bg-red-50 hover:bg-red-100 text-red-700 font-semibold py-3 px-4 rounded-lg flex justify-between items-center transition">
-                                    <span>Review Mistakes (${weakTopicsCount})</span> <i class="fas fa-arrow-right"></i>
-                                </button>
+                    <div class="grid lg:grid-cols-3 gap-6 mb-10">
+                        <div class="lg:col-span-1">
+                            <div class="bg-[#1e1e1e] rounded-2xl overflow-hidden shadow-lg border border-slate-700 h-full flex flex-col">
+                                <div class="bg-[#2d2d2d] px-4 py-2 flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                    <span class="text-xs text-slate-400 ml-2 font-mono">Syntax Pattern</span>
+                                </div>
+                                <div class="p-4 overflow-x-auto flex-1">
+                                    <pre class="text-sm"><code class="text-white">${highlightCode(c.syntax)}</code></pre>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 class="text-xl font-bold mb-4"><i class="fas fa-robot text-blue-500 mr-2"></i> AI-Style Exam Engine</h3>
-                            <p class="text-gray-600 text-sm mb-4 leading-relaxed">
-                                The 130+ questions in this platform simulate AI-style exam patterns based STRICTLY on your IN2101 lecture slides and lab sheets. Features output prediction, compile-time detection, and conceptual logic.
-                            </p>
-                            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded p-4 text-xs font-semibold">
-                                <i class="fas fa-lightbulb mr-1"></i> Disclaimer: These are highly plausible practice questions designed to test deep understanding of the concepts. They are NOT leaked exam questions.
-                            </div>
+                        <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-5"><i class="fa-solid fa-scale-balanced mr-2"></i> Important Rules</h3>
+                            <ul class="space-y-4">
+                                ${c.rules.map((rule, idx) => `
+                                    <li class="flex gap-4 items-start">
+                                        <div class="mt-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-full w-6 h-6 flex items-center justify-center shrink-0 text-xs font-bold">${idx + 1}</div>
+                                        <span class="text-slate-700 dark:text-slate-300 leading-relaxed">${rule}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
                         </div>
                     </div>
-                </div>
-            `;
-        }
 
-        function renderLearn(container) {
-            let html = `
-                <div class="max-w-5xl mx-auto">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6"><i class="fas fa-book-open text-indigo-500 mr-2"></i> Learn Topics</h2>
-                    <div class="space-y-6">
-            `;
-
-            topicsDB.forEach((topic, idx) => {
-                let isRead = userData.progress.topicsRead.includes(topic.id);
-                html += `
-                    <div class="bg-white rounded-xl shadow-sm border ${isRead ? 'border-green-300' : 'border-gray-200'} overflow-hidden">
-                        <div class="p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 flex justify-between items-center" onclick="toggleTopic('topic-${idx}', '${topic.id}')">
-                            <h3 class="text-xl font-bold text-gray-800">${topic.title}</h3>
-                            <div class="flex items-center gap-3">
-                                ${isRead ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold">READ</span>' : ''}
-                                <i class="fas fa-chevron-down text-gray-400 transform transition" id="icon-topic-${idx}"></i>
-                            </div>
+                    ${c.mistake ? `
+                    <div class="mb-10 border border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-900/10 rounded-2xl overflow-hidden shadow-sm">
+                        <div class="bg-orange-100 dark:bg-orange-900/30 px-5 py-3 border-b border-orange-200 dark:border-orange-900/50 flex items-center gap-3">
+                            <i class="fa-solid fa-bug text-orange-600 dark:text-orange-400"></i>
+                            <span class="font-bold text-orange-800 dark:text-orange-300 text-sm uppercase tracking-wider">Common Exam Trap</span>
                         </div>
-                        
-                        <div id="topic-${idx}" class="hidden p-6 border-t border-gray-100 text-gray-700">
-                            <p class="text-lg mb-4 text-indigo-900 bg-indigo-50 p-3 rounded-lg"><i class="fas fa-quote-left text-indigo-300 mr-2"></i> ${topic.explanation}</p>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="p-6 grid md:grid-cols-5 gap-6">
+                            <div class="md:col-span-2 space-y-4">
                                 <div>
-                                    <h4 class="font-bold text-gray-800 border-b pb-1 mb-2"><i class="fas fa-microchip text-gray-500 mr-1"></i> Technical Definition</h4>
-                                    <p class="text-sm">${topic.techDef}</p>
+                                    <div class="text-xs font-bold text-red-500 mb-1"><i class="fa-solid fa-xmark"></i> INCORRECT</div>
+                                    <pre class="text-sm bg-white dark:bg-slate-900 p-3 rounded border border-red-200 dark:border-red-900/30 overflow-x-auto"><code>${highlightCode(c.mistake.wrong)}</code></pre>
                                 </div>
                                 <div>
-                                    <h4 class="font-bold text-gray-800 border-b pb-1 mb-2"><i class="fas fa-bullseye text-red-400 mr-1"></i> Purpose</h4>
-                                    <p class="text-sm">${topic.purpose}</p>
+                                    <div class="text-xs font-bold text-green-500 mb-1"><i class="fa-solid fa-check"></i> CORRECT</div>
+                                    <pre class="text-sm bg-white dark:bg-slate-900 p-3 rounded border border-green-200 dark:border-green-900/30 overflow-x-auto"><code>${highlightCode(c.mistake.right)}</code></pre>
                                 </div>
                             </div>
-
-                            <div class="mb-6">
-                                <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-code text-blue-500 mr-1"></i> Syntax / Example Code</h4>
-                                <pre><code>${topic.syntax.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
-                                <p class="text-sm mt-2 text-gray-600 bg-gray-100 p-2 rounded"><b>Ex:</b> ${topic.example}</p>
+                            <div class="md:col-span-3 flex flex-col justify-center">
+                                <h4 class="font-bold text-slate-800 dark:text-slate-200 mb-2">Why is the first one wrong?</h4>
+                                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${c.mistake.why}</p>
                             </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <div class="bg-red-50 p-3 rounded-lg border border-red-100">
-                                    <h4 class="font-bold text-red-700 text-sm mb-1"><i class="fas fa-times-circle mr-1"></i> Common Mistake</h4>
-                                    <p class="text-xs text-red-600">${topic.mistakes}</p>
-                                </div>
-                                <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                                    <h4 class="font-bold text-yellow-700 text-sm mb-1"><i class="fas fa-brain mr-1"></i> Memory Trick</h4>
-                                    <p class="text-xs text-yellow-700">${topic.memoryTrick}</p>
-                                </div>
-                                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                                    <h4 class="font-bold text-blue-700 text-sm mb-1"><i class="fas fa-search mr-1"></i> Exam Focus</h4>
-                                    <p class="text-xs text-blue-700">${topic.examFocus}</p>
-                                </div>
-                            </div>
-                            
-                            <button onclick="markTopicRead('${topic.id}', this)" class="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded text-sm transition">
-                                <i class="fas fa-check mr-1"></i> Mark as Understood
-                            </button>
                         </div>
-                    </div>
-                `;
-            });
+                    </div>` : ''}
 
-            html += `</div></div>`;
-            container.innerHTML = html;
+                    ${c.codeSnippet ? `
+                    <div class="mt-12">
+                        <div class="flex justify-between items-end mb-6 border-b border-slate-200 dark:border-slate-700 pb-2">
+                            <h2 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-laptop-code text-brand-500"></i> Code Execution Analysis</h2>
+                            <button onclick="switchView('code_tracer', '${id}')" class="bg-brand-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-brand-600 transition-colors">Open Interactive Tracer</button>
+                        </div>
+                    </div>` : ''}
+                </div>
+            `;
+            contentArea.innerHTML = html;
         }
 
-        window.toggleTopic = function(id, topicId) {
-            const el = document.getElementById(id);
-            const icon = document.getElementById('icon-' + id);
-            if (el.classList.contains('hidden')) {
-                el.classList.remove('hidden');
-                icon.classList.add('rotate-180');
-            } else {
-                el.classList.add('hidden');
-                icon.classList.remove('rotate-180');
-            }
-        }
+        let tracerState = { id: null, step: -1, codeObj: null };
 
-        window.markTopicRead = function(topicId, btn) {
-            if(!userData.progress.topicsRead.includes(topicId)) {
-                userData.progress.topicsRead.push(topicId);
-                saveData();
-                btn.innerHTML = "<i class='fas fa-check-double mr-1'></i> Marked!";
-                btn.classList.replace('bg-green-500', 'bg-gray-400');
-            }
-        }
-
-        function renderMockSetup(container) {
-            container.innerHTML = `
-                <div class="max-w-2xl mx-auto">
-                    <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-                        <div class="flex items-center mb-6">
-                            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl mr-4"><i class="fas fa-sliders-h"></i></div>
-                            <h2 class="text-2xl font-bold text-gray-800">Custom Mock Exam Builder</h2>
-                        </div>
-                        
-                        <p class="text-gray-600 mb-8">Build an AI-style practice exam tailored to your needs. Questions will be randomly selected from the entire 130+ question database based on your filters.</p>
-                        
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Number of Questions</label>
-                                <select id="mock-count" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                    <option value="10">10 Questions (Quick Practice)</option>
-                                    <option value="25" selected>25 Questions (Standard Practice)</option>
-                                    <option value="50">50 Questions (Full Practice)</option>
-                                    <option value="75">75 Questions (Deep Dive)</option>
-                                    <option value="100">100 Questions (Endurance Exam)</option>
-                                    <option value="all">All Available Questions</option>
-                                </select>
+        function renderTracerMenu() {
+            let html = `
+                <div class="max-w-5xl mx-auto animate-fade-in pb-20">
+                    <h1 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Trace Execution Flow</h1>
+                    <p class="text-slate-600 dark:text-slate-400 mb-8 text-lg">Select a snippet to step through the JVM execution line-by-line. This is the best way to understand output tracing questions for the exam.</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        ${Object.keys(DB.concepts).filter(k => DB.concepts[k].codeSnippet).map(k => `
+                            <div onclick="initTracer('${k}')" class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer hover:border-brand-500 transition-colors flex items-center justify-between group">
+                                <div>
+                                    <h3 class="font-bold text-lg text-slate-800 dark:text-slate-200">${DB.concepts[k].title}</h3>
+                                    <p class="text-sm text-slate-500 mt-1">Interactive line-by-line breakdown</p>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-500 flex items-center justify-center group-hover:bg-brand-500 group-hover:text-white transition-colors">
+                                    <i class="fa-solid fa-play"></i>
+                                </div>
                             </div>
-                            
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Difficulty Filter</label>
-                                <select id="mock-difficulty" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                    <option value="all" selected>Mixed Difficulty (Simulate Real Exam)</option>
-                                    <option value="easy">Easy Only</option>
-                                    <option value="medium">Medium Only</option>
-                                    <option value="hard">Hard Only</option>
-                                </select>
-                            </div>
-                            
-                            <button onclick="startCustomMock()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg shadow-md transition mt-4">
-                                <i class="fas fa-play mr-2"></i> Start Exam
-                            </button>
-                        </div>
+                        `).join('')}
                     </div>
                 </div>
             `;
+            contentArea.innerHTML = html;
         }
 
-        window.startCustomMock = function() {
-            state.mockConfig.count = document.getElementById('mock-count').value;
-            state.mockConfig.difficulty = document.getElementById('mock-difficulty').value;
-            navigate('quiz', 'mock');
+        function initTracer(conceptId) {
+            tracerState.id = conceptId;
+            tracerState.step = -1;
+            tracerState.codeObj = DB.concepts[conceptId].codeSnippet;
+            renderActiveTracer();
         }
 
-        function renderFlashcards(container) {
-            state.flashcardIndex = 0;
-            updateFlashcardView(container);
-        }
-
-        function updateFlashcardView(container) {
-            const card = flashcardsDB[state.flashcardIndex];
-            container.innerHTML = `
-                <div class="max-w-3xl mx-auto flex flex-col items-center justify-center min-h-[70vh]">
-                    <div class="w-full flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-clone text-indigo-500 mr-2"></i> Rapid Recall</h2>
-                        <span class="text-sm font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">${state.flashcardIndex + 1} / ${flashcardsDB.length}</span>
-                    </div>
-
-                    <div class="w-full perspective-1000 flashcard-container cursor-pointer" onclick="flipCard()">
-                        <div id="flashcard-inner" class="relative w-full h-full transform-style-3d shadow-xl rounded-2xl">
-                            <!-- Front -->
-                            <div class="flashcard-front bg-white border-2 border-indigo-100 rounded-2xl flex flex-col items-center justify-center p-10 text-center">
-                                <p class="text-sm text-gray-400 uppercase tracking-widest mb-4 font-bold">Concept</p>
-                                <h3 class="text-3xl font-bold text-indigo-900">${card.front}</h3>
-                                <p class="mt-8 text-gray-400 text-sm"><i class="fas fa-hand-pointer mr-1"></i> Tap to flip</p>
-                            </div>
-                            <!-- Back -->
-                            <div class="flashcard-back bg-indigo-600 text-white rounded-2xl flex flex-col items-center justify-center p-10 text-center">
-                                <p class="text-sm text-indigo-200 uppercase tracking-widest mb-4 font-bold">Definition</p>
-                                <h3 class="text-xl font-medium leading-relaxed">${card.back}</h3>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-4 w-full mt-8">
-                        <button onclick="changeFlashcard(-1)" class="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-bold py-4 rounded-xl shadow-sm transition"><i class="fas fa-arrow-left mr-2"></i> Prev</button>
-                        <button onclick="changeFlashcard(1)" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-sm transition">Next <i class="fas fa-arrow-right ml-2"></i></button>
-                    </div>
-                </div>
-            `;
-            userData.progress.flashcardsViewed++;
-            saveData();
-        }
-
-        window.flipCard = function() {
-            document.getElementById('flashcard-inner').classList.toggle('rotate-y-180');
-        }
-
-        window.changeFlashcard = function(dir) {
-            state.flashcardIndex += dir;
-            if(state.flashcardIndex < 0) state.flashcardIndex = flashcardsDB.length - 1;
-            if(state.flashcardIndex >= flashcardsDB.length) state.flashcardIndex = 0;
-            updateFlashcardView(document.getElementById('main-content'));
-        }
-
-        function startQuiz(container) {
-            state.score = 0;
-            state.currentQuestionIndex = 0;
-            
-            let db = [...questionsDB];
-            
-            if (state.quizMode === 'code') {
-                db = db.filter(q => q.type === 'code');
-            } else if (state.quizMode === 'mistakes') {
-                db = db.filter(q => userData.mistakes[q.id] && userData.mistakes[q.id] > 0);
-            } else if (state.quizMode === 'unanswered') {
-                db = db.filter(q => !userData.attempted[q.id]);
-            } else if (state.quizMode === 'mock') {
-                if(state.mockConfig.difficulty !== 'all') {
-                    db = db.filter(q => q.difficulty === state.mockConfig.difficulty);
-                }
-                db = db.sort(() => 0.5 - Math.random());
-                if(state.mockConfig.count !== 'all') {
-                    db = db.slice(0, parseInt(state.mockConfig.count));
-                }
-            }
-
-            if(db.length === 0) {
-                container.innerHTML = `
-                    <div class="max-w-2xl mx-auto text-center mt-20">
-                        <div class="text-6xl text-gray-300 mb-4"><i class="fas fa-box-open"></i></div>
-                        <h2 class="text-2xl font-bold text-gray-800 mb-2">No Questions Found</h2>
-                        <p class="text-gray-600 mb-6">There are no questions matching this filter. (e.g., You might not have any unattempted questions or recorded mistakes left!).</p>
-                        <button onclick="navigate('dashboard')" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold shadow hover:bg-indigo-700">Go Back</button>
-                    </div>
-                `;
-                return;
-            }
-
-            db.forEach(q => {
-                let optionsWithIndex = q.options.map((opt, i) => ({ text: opt, isCorrect: i === q.answer }));
-                optionsWithIndex.sort(() => 0.5 - Math.random());
-                q.shuffledOptions = optionsWithIndex;
-            });
-
-            if(state.quizMode !== 'mock') db.sort(() => 0.5 - Math.random());
-
-            state.quizQuestions = db;
-            renderQuestion(container);
-        }
-
-        function renderQuestion(container) {
-            if(state.currentQuestionIndex >= state.quizQuestions.length) {
-                renderQuizResults(container);
-                return;
-            }
-
-            const q = state.quizQuestions[state.currentQuestionIndex];
-            let diffColor = q.difficulty === 'easy' ? 'green' : (q.difficulty === 'medium' ? 'yellow' : 'red');
-            let typeIcon = q.type === 'code' ? 'fa-code' : 'fa-list-ul';
+        function renderActiveTracer() {
+            const { codeObj, step } = tracerState;
+            const lines = codeObj.code.split('\n');
+            const activeStep = step >= 0 ? codeObj.steps[step] : null;
 
             let html = `
-                <div class="max-w-3xl mx-auto pb-20">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-1 rounded mr-2 uppercase tracking-wide">${state.quizMode} Mode</span>
-                            <span class="bg-${diffColor}-100 text-${diffColor}-800 text-xs font-bold px-2 py-1 rounded capitalize"><i class="fas fa-signal"></i> ${q.difficulty}</span>
-                        </div>
-                        <div class="text-gray-500 font-bold text-sm">
-                            Question ${state.currentQuestionIndex + 1} of ${state.quizQuestions.length}
-                        </div>
+                <div class="max-w-6xl mx-auto h-full flex flex-col animate-fade-in">
+                    <div class="mb-4 flex items-center gap-4">
+                        <button onclick="switchView('code_tracer')" class="text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                        <h2 class="text-xl font-bold">Execution Tracer</h2>
                     </div>
 
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-                        <div class="p-6 bg-gray-50 border-b border-gray-200">
-                            <h3 class="text-xl font-semibold text-gray-800 leading-relaxed"><i class="fas ${typeIcon} text-gray-400 mr-2"></i> ${q.text.replace(/\n/g, '<br>')}</h3>
+                    <div class="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
+                        <!-- Left Code Area -->
+                        <div class="w-full lg:w-3/5 flex flex-col bg-[#1e1e1e] rounded-xl overflow-hidden shadow-xl border border-slate-800">
+                            <div class="bg-[#2d2d2d] px-4 py-3 flex items-center justify-between border-b border-slate-700">
+                                <div class="flex gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                </div>
+                                <span class="text-xs text-slate-400 font-mono">JVM Memory View</span>
+                            </div>
+                            <div class="p-4 overflow-y-auto flex-1 font-mono text-sm leading-loose relative custom-scrollbar">
+                                <pre><code>${lines.map((line, i) => `
+                                    <div class="line-highlight px-2 py-0.5 rounded flex ${activeStep && activeStep.line === i ? 'active' : ''}">
+                                        <span class="text-slate-600 mr-4 select-none w-6 text-right shrink-0">${i + 1}</span>
+                                        <span class="break-all whitespace-pre-wrap">${highlightCode(line)}</span>
+                                    </div>`).join('')}
+                                </code></pre>
+                            </div>
                         </div>
-                        
-                        <div class="p-6 space-y-3" id="options-container">
-            `;
 
-            q.shuffledOptions.forEach((opt, idx) => {
-                html += `
-                    <label class="option-label flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-indigo-50 transition" onclick="selectOption(this)">
-                        <input type="radio" name="answer" value="${idx}" class="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 mr-4">
-                        <span class="text-gray-700 font-medium">${opt.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
-                    </label>
-                `;
-            });
+                        <!-- Right Controls Area -->
+                        <div class="w-full lg:w-2/5 flex flex-col gap-4">
+                            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex-1 flex flex-col">
+                                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-solid fa-microchip mr-2"></i> Execution Log</h3>
+                                
+                                <div class="flex-1 bg-slate-50 dark:bg-slate-900 rounded-lg p-5 border border-slate-100 dark:border-slate-800">
+                                    ${activeStep ? `
+                                        <div class="animate-fade-in h-full flex flex-col justify-center">
+                                            <span class="inline-block px-3 py-1 bg-brand-500 text-white text-xs font-bold rounded w-max mb-3 uppercase tracking-wide">
+                                                Step ${step + 1}: ${activeStep.desc}
+                                            </span>
+                                            <p class="text-slate-700 dark:text-slate-300 text-lg leading-relaxed">${activeStep.text}</p>
+                                        </div>
+                                    ` : `
+                                        <div class="h-full flex flex-col items-center justify-center text-slate-400 text-center">
+                                            <i class="fa-solid fa-power-off text-4xl mb-3 opacity-20"></i>
+                                            <p>JVM is idle.<br/>Click Start to begin execution trace.</p>
+                                        </div>
+                                    `}
+                                </div>
 
-            html += `
-                        </div>
-                    </div>
-
-                    <div id="action-area" class="flex justify-end">
-                        <button onclick="checkAnswer()" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-sm transition">Submit Answer</button>
-                    </div>
-
-                    <div id="explanation-area" class="hidden mt-6 bg-white border rounded-xl p-6 shadow-sm">
-                        <div id="exp-header" class="text-lg font-bold mb-2 flex items-center"></div>
-                        <p class="text-gray-700 mb-4" id="exp-text">${q.exp}</p>
-                        ${q.trick ? `<div class="bg-yellow-50 text-yellow-800 text-sm p-3 rounded border border-yellow-200"><i class="fas fa-lightbulb mr-2"></i><b>Memory Trick:</b> ${q.trick}</div>` : ''}
-                        <div class="mt-6 flex justify-end">
-                            <button onclick="nextQuestion()" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-6 rounded-lg transition">Next Question <i class="fas fa-arrow-right ml-2"></i></button>
+                                <div class="mt-6 flex gap-3">
+                                    <button onclick="tracerAction('reset')" class="px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                                        <i class="fa-solid fa-rotate-left"></i>
+                                    </button>
+                                    <button onclick="tracerAction('prev')" ${step < 0 ? 'disabled' : ''} class="px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Prev
+                                    </button>
+                                    <button onclick="tracerAction('next')" ${step >= codeObj.steps.length - 1 ? 'disabled' : ''} class="flex-1 px-4 py-3 rounded-lg bg-brand-500 text-white font-bold hover:bg-brand-600 shadow-md shadow-brand-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                        ${step === -1 ? 'Start Trace <i class="fa-solid fa-play"></i>' : 'Next Step <i class="fa-solid fa-forward-step"></i>'}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
-            container.innerHTML = html;
+            contentArea.innerHTML = html;
         }
 
-        window.selectOption = function(el) {
-            document.querySelectorAll('.option-label').forEach(label => {
-                label.classList.remove('bg-indigo-50', 'border-indigo-500');
-                label.classList.add('border-gray-200');
+        window.tracerAction = function(action) {
+            const max = tracerState.codeObj.steps.length - 1;
+            if (action === 'next' && tracerState.step < max) tracerState.step++;
+            else if (action === 'prev' && tracerState.step > -1) tracerState.step--;
+            else if (action === 'reset') tracerState.step = -1;
+            renderActiveTracer();
+        }
+
+        function renderComparisons() {
+            let html = `
+                <div class="max-w-5xl mx-auto animate-fade-in pb-20">
+                    <h1 class="text-3xl md:text-4xl font-extrabold mb-8 tracking-tight">Concept Comparisons</h1>
+                    <div class="space-y-12">
+                        ${DB.comparisons.map(comp => `
+                            <div>
+                                <h3 class="text-xl font-bold mb-4 text-center text-slate-500 uppercase tracking-widest text-sm border-b border-slate-200 dark:border-slate-800 pb-2">${comp.title}</h3>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm relative">
+                                        <div class="absolute top-0 right-0 bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded-bl-lg">VS</div>
+                                        <h4 class="font-bold text-lg text-brand-600 dark:text-brand-400 mb-2">${comp.left.name}</h4>
+                                        <p class="text-sm text-slate-700 dark:text-slate-300 mb-4">${comp.left.def}</p>
+                                        <div class="text-xs font-bold text-slate-400 mb-2 uppercase">Rule</div>
+                                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4">${comp.left.rule}</p>
+                                        <pre class="bg-slate-50 dark:bg-slate-900 p-3 rounded text-sm overflow-x-auto border border-slate-100 dark:border-slate-700"><code>${highlightCode(comp.left.code)}</code></pre>
+                                    </div>
+                                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm relative">
+                                        <h4 class="font-bold text-lg text-indigo-600 dark:text-indigo-400 mb-2">${comp.right.name}</h4>
+                                        <p class="text-sm text-slate-700 dark:text-slate-300 mb-4">${comp.right.def}</p>
+                                        <div class="text-xs font-bold text-slate-400 mb-2 uppercase">Rule</div>
+                                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4">${comp.right.rule}</p>
+                                        <pre class="bg-slate-50 dark:bg-slate-900 p-3 rounded text-sm overflow-x-auto border border-slate-100 dark:border-slate-700"><code>${highlightCode(comp.right.code)}</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            contentArea.innerHTML = html;
+        }
+
+        function renderErrors() {
+            let html = `
+                <div class="max-w-4xl mx-auto animate-fade-in pb-20">
+                    <h1 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Why Does It Fail?</h1>
+                    <p class="text-slate-600 dark:text-slate-400 mb-8 text-lg">Exams often test your ability to spot intentional errors. Here are the most common traps based on your labs.</p>
+                    
+                    <div class="space-y-8">
+                        ${DB.errors.map(err => `
+                            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                                <div class="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                                    <h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-bug text-red-500"></i> ${err.title}</h3>
+                                </div>
+                                <div class="p-6 grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <div class="text-xs font-bold text-red-500 mb-2"><i class="fa-solid fa-xmark"></i> CODE WITH BUG</div>
+                                        <pre class="text-sm bg-[#1e1e1e] p-4 rounded-lg overflow-x-auto"><code>${highlightCode(err.wrong)}</code></pre>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-bold text-green-500 mb-2"><i class="fa-solid fa-check"></i> CORRECT FIX</div>
+                                        <pre class="text-sm bg-[#1e1e1e] p-4 rounded-lg overflow-x-auto"><code>${highlightCode(err.right)}</code></pre>
+                                    </div>
+                                </div>
+                                <div class="px-6 py-4 bg-brand-50 dark:bg-brand-900/10 border-t border-brand-100 dark:border-brand-900/30">
+                                    <h4 class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase mb-1">The Explanation</h4>
+                                    <p class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">${err.why}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            contentArea.innerHTML = html;
+        }
+
+        function renderReadCode() {
+            let html = `
+                <div class="max-w-4xl mx-auto animate-fade-in pb-20 relative">
+                    <h1 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">How to Read Java Code</h1>
+                    <p class="text-slate-600 dark:text-slate-400 mb-10 text-lg">Follow this 5-step process when analyzing unfamiliar code in the exam.</p>
+                    
+                    <div class="relative pl-12 space-y-8">
+                        <div class="tree-line"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="absolute -left-12 top-0 w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-slate-50 dark:ring-slate-900">1</div>
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <h3 class="font-bold text-lg mb-1">Find the Classes & Inheritance</h3>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm">Look for <code class="text-brand-500">class A extends B</code>. This tells you the blueprint hierarchy. Child inherits Parent's methods.</p>
+                            </div>
+                        </div>
+
+                        <div class="relative z-10">
+                            <div class="absolute -left-12 top-0 w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-slate-50 dark:ring-slate-900">2</div>
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <h3 class="font-bold text-lg mb-1">Locate the main() method</h3>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm">Execution ALWAYS starts here. Ignore other methods until they are called from main.</p>
+                            </div>
+                        </div>
+
+                        <div class="relative z-10">
+                            <div class="absolute -left-12 top-0 w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-slate-50 dark:ring-slate-900">3</div>
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <h3 class="font-bold text-lg mb-1">Track "new" Objects</h3>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm">When you see <code class="text-brand-500">new ClassName()</code>, immediately jump to that class's constructor. Look for <code class="text-brand-500">super()</code> calls inside it.</p>
+                            </div>
+                        </div>
+
+                        <div class="relative z-10">
+                            <div class="absolute -left-12 top-0 w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-slate-50 dark:ring-slate-900">4</div>
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <h3 class="font-bold text-lg mb-1">Follow Method Calls</h3>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm">If <code class="text-brand-500">obj.doWork()</code> is called, check if <code class="text-brand-500">doWork</code> is Overridden in the child. If yes, the child's version runs (Runtime Polymorphism).</p>
+                            </div>
+                        </div>
+
+                        <div class="relative z-10">
+                            <div class="absolute -left-12 top-0 w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-slate-50 dark:ring-slate-900">5</div>
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <h3 class="font-bold text-lg mb-1">Write Output on Paper</h3>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm">Every time you see <code class="text-brand-500">System.out.println</code>, write it down. Keep track of variable values changing.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            contentArea.innerHTML = html;
+        }
+
+        function renderMustRemember() {
+            let html = `
+                <div class="max-w-5xl mx-auto animate-fade-in pb-20">
+                    <div class="text-center mb-10">
+                        <div class="inline-block bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider mb-4"><i class="fa-solid fa-bolt"></i> 5 Minutes Before Exam</div>
+                        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight">Must Remember</h1>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        ${DB.mustRemember.map(item => `
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border-l-4 border-l-brand-500 shadow-sm flex flex-col justify-center">
+                                <h3 class="font-bold text-slate-900 dark:text-white text-lg mb-1 font-mono">${item.title}</h3>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm">${item.text}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            contentArea.innerHTML = html;
+        }
+
+
+        let currentView = 'dashboard';
+
+        function buildNav() {
+            const nav = document.getElementById('nav-links');
+            let html = '';
+            
+            DB.navStructure.forEach(item => {
+                if (item.type === 'header') {
+                    html += `<div class="mt-6 mb-2 px-3 text-xs font-bold text-slate-400 uppercase tracking-widest">${item.label}</div>`;
+                } else {
+                    const activeClass = currentView === item.id ? 'bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium';
+                    html += `
+                        <button onclick="switchView('${item.id}')" class="w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 ${activeClass}">
+                            <i class="fa-solid ${item.icon} w-5 text-center ${currentView === item.id ? '' : 'opacity-70'}"></i> 
+                            <span class="truncate">${item.label}</span>
+                        </button>
+                    `;
+                }
             });
-            el.classList.add('bg-indigo-50', 'border-indigo-500');
-            el.classList.remove('border-gray-200');
-            el.querySelector('input').checked = true;
+            nav.innerHTML = html;
         }
 
-        window.checkAnswer = function() {
-            const selected = document.querySelector('input[name="answer"]:checked');
-            if(!selected) {
-                const btn = document.getElementById('submit-btn');
-                const origText = btn.innerText;
-                btn.innerText = "Please select an answer!";
-                btn.classList.replace('bg-indigo-600', 'bg-red-500');
-                setTimeout(() => {
-                    btn.innerText = origText;
-                    btn.classList.replace('bg-red-500', 'bg-indigo-600');
-                }, 2000);
+        function switchView(viewId, param = null) {
+            currentView = viewId;
+            buildNav();
+            contentArea.scrollTop = 0;
+            
+            if (window.innerWidth < 768) toggleMenu(false); // Close mobile menu
+
+            if (viewId === 'dashboard') renderDashboard();
+            else if (viewId.startsWith('concept_')) renderConcept(viewId);
+            else if (viewId === 'code_tracer') {
+                if(param) initTracer(param);
+                else renderTracerMenu();
+            }
+            else if (viewId === 'comparisons') renderComparisons();
+            else if (viewId === 'common_errors') renderErrors();
+            else if (viewId === 'read_code') renderReadCode();
+            else if (viewId === 'must_remember') renderMustRemember();
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+            const icon = document.getElementById('theme-icon');
+            
+            if (isDark) {
+                html.classList.remove('dark');
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            } else {
+                html.classList.add('dark');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        }
+
+        function toggleMenu(forceClose = null) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            
+            if (forceClose === false || !isClosed) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            }
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (query.length < 2) {
+                resultsDiv.classList.add('hidden');
                 return;
             }
 
-            const q = state.quizQuestions[state.currentQuestionIndex];
-            const selectedIdx = parseInt(selected.value);
-            const isCorrect = q.shuffledOptions[selectedIdx].isCorrect;
+            let results = [];
+            Object.keys(DB.concepts).forEach(key => {
+                if (DB.concepts[key].title.toLowerCase().includes(query) || DB.concepts[key].simpleDef.toLowerCase().includes(query)) {
+                    results.push({ id: key, title: DB.concepts[key].title, type: 'Concept' });
+                }
+            });
 
-            userData.attempted[q.id] = true;
-            userData.progress.questionsAttempted++;
-            
-            document.querySelectorAll('input[name="answer"]').forEach(input => input.disabled = true);
-            document.getElementById('submit-btn').classList.add('hidden');
-
-            const labels = document.querySelectorAll('.option-label');
-            const expArea = document.getElementById('explanation-area');
-            const expHeader = document.getElementById('exp-header');
-
-            if(isCorrect) {
-                userData.progress.questionsCorrect++;
-                state.score++;
-                if(userData.mistakes[q.id]) delete userData.mistakes[q.id]; 
-                
-                labels[selectedIdx].classList.replace('bg-indigo-50', 'bg-green-100');
-                labels[selectedIdx].classList.replace('border-indigo-500', 'border-green-500');
-                
-                expHeader.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2 text-2xl"></i> <span class="text-green-700">Correct!</span>`;
-                expArea.classList.add('border-green-200');
-            } else {
-                userData.mistakes[q.id] = (userData.mistakes[q.id] || 0) + 1;
-
-                labels[selectedIdx].classList.replace('bg-indigo-50', 'bg-red-100');
-                labels[selectedIdx].classList.replace('border-indigo-500', 'border-red-500');
-                
-                let correctIdx = q.shuffledOptions.findIndex(o => o.isCorrect);
-                labels[correctIdx].classList.add('border-green-500', 'bg-green-50');
-                labels[correctIdx].classList.remove('border-gray-200');
-
-                expHeader.innerHTML = `<i class="fas fa-times-circle text-red-500 mr-2 text-2xl"></i> <span class="text-red-700">Incorrect</span>`;
-                expArea.classList.add('border-red-200');
-            }
-
-            saveData();
-            expArea.classList.remove('hidden');
-            expArea.classList.add('fade-in');
-        }
-
-        window.nextQuestion = function() {
-            state.currentQuestionIndex++;
-            renderQuestion(document.getElementById('main-content'));
-        }
-
-        function renderQuizResults(container) {
-            let percentage = state.quizQuestions.length > 0 ? Math.round((state.score / state.quizQuestions.length) * 100) : 0;
-            let message = percentage >= 80 ? "Excellent Work! 🏆" : (percentage >= 50 ? "Good Practice! 👍" : "Needs Review 📚");
-            let color = percentage >= 80 ? "green" : (percentage >= 50 ? "yellow" : "red");
-
-            container.innerHTML = `
-                <div class="max-w-2xl mx-auto text-center mt-10 pb-10">
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-10">
-                        <div class="w-32 h-32 mx-auto rounded-full border-8 border-${color}-400 flex items-center justify-center mb-6">
-                            <span class="text-4xl font-bold text-gray-800">${percentage}%</span>
-                        </div>
-                        <h2 class="text-3xl font-bold text-gray-800 mb-2">${message}</h2>
-                        <p class="text-gray-600 text-lg mb-8">You scored ${state.score} out of ${state.quizQuestions.length} in ${state.quizMode.toUpperCase()} mode.</p>
-                        
-                        <div class="flex justify-center gap-4 flex-wrap">
-                            <button onclick="navigate('dashboard')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition"><i class="fas fa-home mr-2"></i> Dashboard</button>
-                            <button onclick="navigate('quiz', 'unanswered')" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg transition"><i class="fas fa-question mr-2"></i> Unanswered</button>
-                            <button onclick="navigate('quiz', 'mistakes')" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition"><i class="fas fa-fire mr-2"></i> Review Mistakes</button>
-                        </div>
+            if (results.length > 0) {
+                resultsDiv.innerHTML = results.map(r => `
+                    <div onclick="document.getElementById('searchInput').value=''; document.getElementById('searchResults').classList.add('hidden'); switchView('${r.id}')" class="p-3 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
+                        <div class="text-sm font-bold text-slate-800 dark:text-slate-200">${r.title}</div>
+                        <div class="text-[10px] text-slate-500 uppercase tracking-wide">${r.type}</div>
                     </div>
-                </div>
-            `;
+                `).join('');
+                resultsDiv.classList.remove('hidden');
+            } else {
+                resultsDiv.innerHTML = '<div class="p-4 text-sm text-slate-500 text-center">No results found</div>';
+                resultsDiv.classList.remove('hidden');
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            navigate('dashboard');
+        // Close search on click outside
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('#searchInput') && !e.target.closest('#searchResults')) {
+                document.getElementById('searchResults').classList.add('hidden');
+            }
         });
 
+        // Initialize App
+        window.onload = () => {
+            // Check system preference for theme
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                toggleTheme(); 
+            }
+            buildNav();
+            switchView('dashboard');
+        };
     </script>
 </body>
 </html>
