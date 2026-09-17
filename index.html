@@ -1,781 +1,559 @@
-<!DOCTYPE html>
-<html lang="en" class="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OOP Java Learning Hub</title>
+import React, { useState, useEffect } from 'react';
+import { Home, Book, Code, Play, Zap, Moon, Sun, Menu, X, AlertTriangle, FileText, Server, Activity, Type } from 'lucide-react';
+
+const GlobalStyles = () => (
+  <style>{`
+    .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        slate: { 850: '#151e2e' }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                        mono: ['Fira Code', 'ui-monospace', 'monospace'],
-                    }
-                }
+    .token.keyword { color: #c678dd; }
+    .token.type { color: #e5c07b; }
+    .token.string { color: #98c379; }
+    .token.comment { color: #5c6370; font-style: italic; }
+    
+    .code-line { transition: all 0.2s ease; border-left: 3px solid transparent; }
+    .code-line.active { background-color: rgba(14, 165, 233, 0.1); border-left-color: #0ea5e9; }
+    .dark .code-line.active { background-color: rgba(14, 165, 233, 0.2); }
+  `}</style>
+);
+
+const curriculum = {
+    assignment_focus: [
+        {
+            id: 'exceptions',
+            title: 'Exception Handling',
+            source: 'Lab 08',
+            icon: AlertTriangle,
+            simpleDef: 'Catching runtime errors so your program doesn\'t crash.',
+            technicalDef: 'A mechanism to handle runtime anomalies using try, catch, throw, throws, and finally blocks, maintaining normal application flow.',
+            why: 'Programs deal with unpredictable things (bad user input, missing files, divided by zero). Exceptions let us handle these gracefully.',
+            syntax: 'try {\n  // Risky code\n} catch (ExceptionType e) {\n  // Handle it\n} finally {\n  // Always runs\n}',
+            rules: [
+                'Checked Exceptions: Checked at compile time (e.g., IOException). Must be caught or thrown.',
+                'Unchecked Exceptions: Runtime errors (e.g., ArithmeticException). Not enforced by compiler.',
+                'Specific exceptions MUST be caught before general exceptions in multiple catch blocks.',
+                'The finally block executes regardless of whether an exception occurred (unless System.exit(0) is called).'
+            ],
+            commonMistake: {
+                wrong: 'try { int x = 10/0; } \ncatch(Exception e) {} \ncatch(ArithmeticException e) {}',
+                why: 'Specific exceptions must be caught BEFORE general exceptions. Exception is the parent of ArithmeticException, so the second catch is unreachable and causes a compile error.',
+                right: 'try { int x = 10/0; } \ncatch(ArithmeticException e) {} \ncatch(Exception e) {}'
+            },
+            code: {
+                snippet: `import java.util.Scanner;\n\npublic class MathHelp {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        try {\n            System.out.print("Enter divider: ");\n            int num2 = sc.nextInt();\n            int result = 12 / num2;\n            System.out.println("Result: " + result);\n        } catch (ArithmeticException e) {\n            System.out.println("Error: Cannot divide by zero!");\n        } catch (Exception e) {\n            System.out.println("Error: Invalid input type!");\n        } finally {\n            System.out.println("Operation complete.");\n        }\n    }\n}`,
+                steps: [
+                    { line: 5, desc: 'Try Block', text: 'Execution enters the try block. This code is monitored for errors.' },
+                    { line: 7, desc: 'User Input', text: 'If user enters 0, the next line will fail.' },
+                    { line: 8, desc: 'Risky Operation', text: '12 / 0 throws an ArithmeticException object. Execution immediately jumps out of the try block.' },
+                    { line: 10, desc: 'Specific Catch', text: 'Java checks catch blocks top-to-bottom. It matches ArithmeticException.' },
+                    { line: 11, desc: 'Handling', text: 'The custom error message is printed. The program does NOT crash.' },
+                    { line: 14, desc: 'Finally Block', text: 'This block executes no matter what happened above. Essential for closing resources like Scanners.' }
+                ]
+            }
+        },
+        {
+            id: 'threads',
+            title: 'Threads & Synchronization',
+            source: 'Lab 09',
+            icon: Activity,
+            simpleDef: 'Doing multiple tasks at the exact same time in the background.',
+            technicalDef: 'A thread is a lightweight sub-process. Multithreading allows concurrent execution. Synchronization controls access to shared resources.',
+            why: 'To keep UI responsive while doing heavy background work, or processing multiple independent tasks simultaneously for better CPU utilization.',
+            syntax: 'class MyThread extends Thread {\n  public void run() {\n    // background task\n  }\n}\n// To start:\nnew MyThread().start();',
+            rules: [
+                'Two ways to create: Extend Thread class OR Implement Runnable interface.',
+                'ALWAYS call .start(), NEVER call .run() directly (run() just executes synchronously in the main thread).',
+                'Thread.sleep(ms) pauses the current thread. Requires catching InterruptedException.',
+                'synchronized keyword prevents multiple threads from accessing a shared resource at the exact same time (prevents data corruption).'
+            ],
+            commonMistake: {
+                wrong: 'MyThread t1 = new MyThread();\nt1.run();',
+                why: 'Calling run() directly does NOT start a new background thread. It just runs the method in the current main thread, blocking it.',
+                right: 'MyThread t1 = new MyThread();\nt1.start();'
+            },
+            code: {
+                snippet: `class Count {\n    // SYNCHRONIZED prevents simultaneous access\n    synchronized void printCount(int n) {\n        for(int i = 1; i <= 3; i++) {\n            System.out.println("Value = " + (n * i));\n            try {\n                Thread.sleep(100); // Pause 0.1s\n            } catch (Exception e) {}\n        }\n    }\n}\n\nclass MyThread extends Thread {\n    Count c;\n    int val;\n    MyThread(Count c, int val) { this.c = c; this.val = val; }\n    public void run() { c.printCount(val); }\n}\n\n// Main:\nCount sharedObj = new Count();\nMyThread t1 = new MyThread(sharedObj, 100);\nMyThread t2 = new MyThread(sharedObj, 10);\nt1.start();\nt2.start();`,
+                steps: [
+                    { line: 20, desc: 'Shared Resource', text: 'ONE instance of Count is created. Both threads will try to use this exact object.' },
+                    { line: 23, desc: 'Start t1', text: 't1 enters RUNNABLE state. JVM calls its run() method. It enters printCount().' },
+                    { line: 24, desc: 'Start t2', text: 't2 enters RUNNABLE state. It tries to enter printCount().' },
+                    { line: 2, desc: 'Sync Lock Acquired', text: 'Because printCount is synchronized, t1 gets the "lock" for sharedObj. t2 is BLOCKED and must wait.' },
+                    { line: 3, desc: 'Execution', text: 't1 executes the loop, sleeping 100ms each iteration. t2 remains waiting.' },
+                    { line: 9, desc: 'Lock Released', text: 't1 finishes printCount, releasing the lock. t2 can now enter and execute.' }
+                ]
+            }
+        },
+        {
+            id: 'strings',
+            title: 'String, StringBuilder & equals()',
+            source: 'Lab 10',
+            icon: Type,
+            simpleDef: 'Strings are text. Normal Strings cannot be changed once made (Immutable). StringBuilder can be changed (Mutable).',
+            technicalDef: 'String objects are immutable and stored in the String Constant Pool (SCP). StringBuilder objects are mutable and stored on the Heap.',
+            why: 'String immutability provides security and memory efficiency. StringBuilder provides performance when doing heavy string concatenations.',
+            syntax: 'String s = "Hello"; // Pool\nStringBuilder sb = new StringBuilder("Hello");\nsb.append(" World"); // Heap, modified in place',
+            rules: [
+                'String methods (concat, trim, toLowerCase) return a NEW String. They do not modify the original.',
+                '== compares memory references (addresses).',
+                '.equals() compares the actual character content.',
+                'StringBuilder is not thread-safe (fast), StringBuffer is thread-safe (slower).'
+            ],
+            commonMistake: {
+                wrong: 'String s = "Java";\ns.concat(" Pro");\nSystem.out.println(s); // Prints "Java"',
+                why: 'Strings are immutable. .concat() creates a new string but you threw it away by not assigning it back to a variable.',
+                right: 'String s = "Java";\ns = s.concat(" Pro");'
+            },
+            code: {
+                snippet: `// == vs equals()\nString s1 = "admin";\nString s2 = new String("admin");\n\nboolean refCheck = (s1 == s2);\nboolean contentCheck = s1.equals(s2);\n\n// Mutability\nString str = "Race";\nstr.concat(" Car"); // Result is lost!\n\nStringBuilder sb = new StringBuilder("Race");\nsb.append(" Car"); // Modifies original\nsb.reverse();\n\nSystem.out.println(sb.toString()); // "raC ecaR"`,
+                steps: [
+                    { line: 1, desc: 'String Literal', text: '"admin" is placed in the String Constant Pool. s1 points there.' },
+                    { line: 2, desc: 'New Object', text: '"new" forces creation of a brand new object on the Heap. s2 points to the Heap.' },
+                    { line: 4, desc: 'Reference Compare', text: '(==) Compares memory addresses. s1 (Pool) and s2 (Heap) are different. Result: false.' },
+                    { line: 5, desc: 'Content Compare', text: '(.equals) Compares the actual characters "a-d-m-i-n". Result: true.' },
+                    { line: 9, desc: 'Immutable Result', text: 'concat creates a new string "Race Car" in memory, but it\'s unassigned and garbage collected. str remains "Race".' },
+                    { line: 11, desc: 'StringBuilder', text: 'Creates a mutable array of characters on the heap.' },
+                    { line: 12, desc: 'Mutable Append', text: 'Alters the existing StringBuilder object in memory without creating a new object.' }
+                ]
+            }
+        },
+        {
+            id: 'file-io',
+            title: 'File Handling (I/O)',
+            source: 'Lab 11',
+            icon: FileText,
+            simpleDef: 'Reading data from a file or writing data to a file on your hard drive.',
+            technicalDef: 'Java uses streams to handle I/O. Byte streams (InputStream) for binary, Character streams (Reader/Writer) for text. File class represents the path.',
+            why: 'Data in RAM is lost when the program ends. Files allow persistent storage of data.',
+            syntax: 'File f = new File("data.txt");\ntry (Scanner sc = new Scanner(f)) {\n  while(sc.hasNextLine()) { ... }\n}',
+            rules: [
+                'Use file.exists() to check if a file is actually on the disk before reading.',
+                'File operations throw checked exceptions (IOException, FileNotFoundException). They MUST be wrapped in try-catch.',
+                'Always close streams/scanners when done to free OS resources (or use try-with-resources to do it automatically).'
+            ],
+            code: {
+                snippet: `import java.io.File;\nimport java.util.Scanner;\n\npublic class FileReader {\n    public static void main(String[] args) {\n        File myFile = new File("D:\\\\data.txt");\n        \n        try {\n            if(myFile.exists() && myFile.canRead()) {\n                Scanner reader = new Scanner(myFile);\n                while (reader.hasNextLine()) {\n                    String data = reader.nextLine();\n                    System.out.println(data);\n                }\n                reader.close();\n            } else {\n                System.out.println("File not found");\n            }\n        } catch (Exception e) {\n            System.out.println("Error reading file.");\n        }\n    }\n}`,
+                steps: [
+                    { line: 5, desc: 'File Object', text: 'Creates an abstract representation of the file path. It does NOT open the file yet.' },
+                    { line: 7, desc: 'Try Block', text: 'Opening files is risky (might not exist). Must use try-catch for FileNotFoundException.' },
+                    { line: 8, desc: 'Validation', text: 'Checking if the file actually exists on the hard drive and if OS permissions allow reading.' },
+                    { line: 9, desc: 'Open Stream', text: 'Scanner attaches to the file to read it character by character.' },
+                    { line: 10, desc: 'Read Loop', text: 'hasNextLine() checks if there is another line of text before the End-Of-File (EOF).' },
+                    { line: 11, desc: 'Read Data', text: 'nextLine() extracts the entire line of text as a String.' },
+                    { line: 14, desc: 'Resource Cleanup', text: 'Crucial: closing the scanner releases the file lock from the Operating System.' }
+                ]
             }
         }
-    </script>
-
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <style>
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-thumb { background: #475569; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Interactive Code Token Hover */
-        .code-token { transition: all 0.2s ease-in-out; border-radius: 4px; padding: 2px 4px; margin: 0 -4px; border: 1px solid transparent; cursor: pointer; }
-        .code-token:hover { background-color: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.5); }
-        .code-token.active { background-color: rgba(59, 130, 246, 0.3); border-color: rgb(59, 130, 246); font-weight: bold; }
-        
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
-</head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-
-        
-        const theoryData = [
-            {
-                id: 'exceptions',
-                title: 'Exceptions & Handling (Lab 8)',
-                simple: 'A safety net to catch errors so the program doesn\'t crash instantly.',
-                technical: 'A mechanism to handle runtime anomalies, maintaining normal application flow by intercepting events that disrupt instruction execution.',
-                why: 'Files might be missing, users might enter letters instead of numbers, or math might divide by zero. We need to handle these gracefully.',
-                syntax: `try {\n    // risky code\n} catch (Exception e) {\n    // handle error\n} finally {\n    // always runs\n}`,
-                rules: [
-                    'Checked exceptions (e.g., FileNotFoundException) MUST be handled (try-catch) or declared (throws). Checked at compile-time.',
-                    'Unchecked exceptions (e.g., ArithmeticException) happen at runtime.',
-                    'Specific catch blocks must come BEFORE general Exception blocks.',
-                    'throw is an action. throws is a warning on the method signature.'
-                ],
-                mistake: { 
-                    wrong: 'catch (Exception e) {...} catch (FileNotFoundException e) {...}', 
-                    right: 'catch (FileNotFoundException e) {...} catch (Exception e) {...}', 
-                    why: 'Subclasses must be caught before their parent classes, otherwise the subclass block is completely unreachable.' 
-                },
-                memory: '"try" the code, "catch" the fall, "finally" clean it all up.'
+    ],
+    foundations: [
+        {
+            id: 'classes-objects',
+            title: 'Classes & Objects',
+            source: 'Lab 02, 03',
+            icon: Server,
+            simpleDef: 'A class is a blueprint. An object is a real thing built from that blueprint.',
+            technicalDef: 'A class is a user-defined data type encapsulating state (variables) and behavior (methods). An object is a runtime instance of a class.',
+            why: 'To group related data and actions together, modeling real-world entities cleanly.',
+            syntax: 'class Dog {\n  String breed;\n  void bark() {}\n}\nDog myDog = new Dog();',
+            rules: [
+                'Classes define the structure.',
+                'Objects are created using the "new" keyword.',
+                'Multiple objects can be created from one class, each with its own memory.'
+            ],
+            commonMistake: {
+                wrong: 'Dog d;\n d.bark(); // Error',
+                why: 'You created a reference variable, but no actual object exists in memory yet (NullPointerException).',
+                right: 'Dog d = new Dog();\n d.bark();'
             },
-            {
-                id: 'threads',
-                title: 'Threads & Concurrency (Lab 9)',
-                simple: 'Doing multiple tasks at the exact same time in the background.',
-                technical: 'A thread is a lightweight process. Multithreading allows concurrent execution of two or more parts of a program for maximum CPU utilization.',
-                why: 'If a program is doing a heavy task, the UI shouldn\'t freeze. Threads let tasks happen in the background simultaneously.',
-                syntax: `class MyThread extends Thread {\n    public void run() {\n        // background task\n    }\n}\n// usage:\nnew MyThread().start();`,
-                rules: [
-                    'Always call start(), never call run() directly.',
-                    'Thread.sleep() requires catching InterruptedException.',
-                    'Runnable is preferred over extending Thread because Java allows only one parent class.',
-                    'Synchronized keyword locks a resource for one thread at a time.'
-                ],
-                mistake: { 
-                    wrong: 'MyThread t1 = new MyThread();\nt1.run();', 
-                    right: 'MyThread t1 = new MyThread();\nt1.start();', 
-                    why: 'Calling run() executes synchronously on the main thread. start() actually spawns a new concurrent background thread.' 
-                },
-                memory: 'START creates a new path. RUN just walks down the current path.'
-            },
-            {
-                id: 'strings',
-                title: 'String Immutability (Lab 10)',
-                simple: 'Once you create a String, you cannot change its text. You can only create a new one.',
-                technical: 'String objects in Java are immutable. Any operation that appears to modify a String actually creates and returns a newly allocated String object.',
-                why: 'Security, thread-safety, and memory optimization (String Constant Pool).',
-                syntax: `String s = "Hello";\ns.concat(" World"); // s is STILL "Hello"\ns = s.concat(" World"); // Now s points to the new string`,
-                rules: [
-                    'Use .equals() for content comparison, NEVER ==.',
-                    'Use StringBuilder when modifying strings heavily inside loops.',
-                    'trim() removes spaces, substring(start, end) extracts parts. (end is exclusive)'
-                ],
-                mistake: { 
-                    wrong: 'if (str1 == str2)', 
-                    right: 'if (str1.equals(str2))', 
-                    why: '== compares memory addresses (locations). .equals() compares the actual text characters (content).' 
-                },
-                memory: 'String is Stubborn (Immutable). Builder is Building (Mutable).'
-            },
-            {
-                id: 'fileio',
-                title: 'File I/O & ArrayList (Lab 11)',
-                simple: 'Reading files from the hard drive and storing them in dynamic lists.',
-                technical: 'Using File, BufferedReader, and ArrayList to interact with the file system and store dynamic sequential data.',
-                why: 'Programs need to save and retrieve permanent data, and we often don\'t know how many lines a file has, so we use ArrayList instead of standard Arrays.',
-                syntax: `File f = new File("D:\\\\test.txt");\nif(f.exists() && f.canRead()) {\n    List<String> list = new ArrayList<String>();\n}`,
-                rules: [
-                    'Creating a File object does NOT create a file on disk. It just creates a path reference.',
-                    'Always check f.exists() and f.canRead() before reading.',
-                    'BufferedReader is more efficient for reading text line-by-line using readLine().'
-                ],
-                mistake: { 
-                    wrong: 'File f = new File("D:\\file.txt");\nFileReader fr = new FileReader(f); // Assuming it exists', 
-                    right: 'if(!f.exists()) { return; }\n// then read', 
-                    why: 'Attempting to read a non-existent file will throw a FileNotFoundException.' 
-                },
-                memory: 'File is just a map (path). BufferedReader is the car that drives there.'
-            }
-        ];
-
-        const codeBreakdowns = [
-            {
-                id: 'custom-exception',
-                title: 'Custom Exception & Throwing (Lab 8)',
-                code: `class InvalidWeightException extends Exception {\n    InvalidWeightException(String Str) {\n        super(Str);\n    }\n}\n\nvoid weightCheck(double weight) throws InvalidWeightException {\n    if (weight < 50) {\n        throw new InvalidWeightException("Cannot donate");\n    }\n}`,
-                tokens: [
-                    { token: 'class InvalidWeightException extends Exception', explain: 'Creates a custom checked exception.', why: 'We need a specific error type for our application rules rather than generic errors.' },
-                    { token: 'InvalidWeightException(String Str)', explain: 'The Constructor for our custom exception.', why: 'Allows us to pass a custom error message when the exception is created.' },
-                    { token: 'super(Str);', explain: 'Calls the constructor of the parent class (Exception).', why: 'The parent class handles storing the message so we can later retrieve it using e.getMessage().' },
-                    { token: 'throws InvalidWeightException', explain: 'Method signature warning.', why: 'Tells Java this method doesn\'t catch the error itself, it propagates it to whoever called the method.' },
-                    { token: 'throw new InvalidWeightException("Cannot donate");', explain: 'Instantiates and fires the exception.', why: 'This immediately stops normal execution because the validation rule (weight < 50) failed.' }
-                ]
-            },
-            {
-                id: 'thread-runnable',
-                title: 'Runnable & Interrupts (Lab 9)',
-                code: `class Task implements Runnable {\n    public void run() {\n        try {\n            Thread.sleep(1000);\n        } catch (InterruptedException e) {\n            System.out.println("Interrupted!");\n        }\n    }\n}\n\nThread t = new Thread(new Task());\nt.start();`,
-                tokens: [
-                    { token: 'implements Runnable', explain: 'Separates the task logic from the Thread object.', why: 'Preferred over extending Thread because Java allows only one parent class. Leaves inheritance open.' },
-                    { token: 'public void run()', explain: 'The core execution method.', why: 'Contains the exact background job the thread will perform concurrently.' },
-                    { token: 'Thread.sleep(1000);', explain: 'Pauses the thread for 1 second.', why: 'Used to simulate work or delay execution. Must be in a try-catch.' },
-                    { token: 'catch (InterruptedException e)', explain: 'Catches thread wake-up signals.', why: 'If another thread calls t.interrupt() while this thread is sleeping, it throws this exception to wake it up gracefully.' },
-                    { token: 'new Thread(new Task());', explain: 'Wraps the Runnable in a Thread.', why: 'A Runnable cannot start itself. It needs a Thread container to execute it.' },
-                    { token: 't.start();', explain: 'Begins execution.', why: 'Allocates OS resources and schedules the thread. Never call run() directly!' }
-                ]
-            },
-            {
-                id: 'string-builder',
-                title: 'StringBuilder Palindrome (Lab 10)',
-                code: `String input = "Race Car";\nString processed = input.replace(" ", "").toLowerCase();\n\nStringBuilder sb = new StringBuilder(processed);\nsb.reverse();\n\nif (processed.equals(sb.toString())) {\n    System.out.println("Palindrome");\n}`,
-                tokens: [
-                    { token: 'input.replace(" ", "").toLowerCase();', explain: 'Cleans the string.', why: 'Removes spaces and normalizes case so "Race Car" becomes "racecar", ensuring accurate palindrome checking.' },
-                    { token: 'StringBuilder sb = new StringBuilder(processed);', explain: 'Creates a mutable character buffer.', why: 'Strings are immutable, meaning they don\'t have a built-in reverse() that alters them. Builders are mutable.' },
-                    { token: 'sb.reverse();', explain: 'Flips the characters in place.', why: 'Modifies the actual buffer inside sb without creating new string objects in memory.' },
-                    { token: 'sb.toString()', explain: 'Converts builder back to String.', why: 'You cannot compare a String and a StringBuilder directly using .equals(). You must convert the builder to a String first.' },
-                    { token: 'processed.equals(', explain: 'Content comparison.', why: 'Compares the actual letters of the original processed string and the reversed string.' }
-                ]
-            }
-        ];
-
-        const executionTraces = [
-            {
-                id: 'exec-exceptions',
-                title: 'Trace: Exception Propagation (Lab 8)',
-                lines: [
-                    "public void calculate(int a, int b) throws Exception {",
-                    "  if (b == 0) {",
-                    "    throw new Exception(\"Div by Zero\");",
-                    "  }",
-                    "  System.out.println(a / b);",
-                    "}",
-                    "// Inside main():",
-                    "try {",
-                    "  calculate(10, 0);",
-                    "} catch (Exception e) {",
-                    "  System.out.println(e.getMessage());",
-                    "}"
-                ],
+            code: {
+                snippet: `class Dog {\n    String breed;\n    void bark() {\n        System.out.println("Woof!");\n    }\n}\n\n// Execution:\nDog myDog = new Dog();\nmyDog.breed = "Maltese";\nmyDog.bark();`,
                 steps: [
-                    { line: 7, msg: 'Main enters the try block.', why: 'Prepares to catch any errors from risky code.' },
-                    { line: 8, msg: 'Calls calculate(10, 0).', why: 'Passes 10 as a, and 0 as b. Execution moves to the method.' },
-                    { line: 0, msg: 'Execution jumps to calculate method.', why: 'Method signature warns it might throw an Exception (throws clause).' },
-                    { line: 1, msg: 'Checks if b == 0. It is true.', why: 'Division by zero is mathematically undefined.' },
-                    { line: 2, msg: 'Manually creates and throws a new Exception.', why: 'The throw keyword instantly stops normal execution here. Line 4 is skipped.' },
-                    { line: 9, msg: 'Execution jumps directly back to the catch block in main.', why: 'The error propagated down the call stack until it found a matching catch block.' },
-                    { line: 10, msg: 'Prints "Div by Zero".', why: 'e.getMessage() fetches the string we passed into the exception on line 2.' }
+                    { line: 0, desc: 'Blueprint', text: 'Java reads the blueprint for a Dog. No memory allocated yet.' },
+                    { line: 8, desc: 'Instantiation', text: '"new Dog()" allocates memory. "Dog myDog" creates a reference. "=" links them.' },
+                    { line: 9, desc: 'State Change', text: 'Modifies the instance variable "breed" for this specific object.' },
+                    { line: 10, desc: 'Behavior', text: 'Calls the method on the specific myDog object.' }
                 ]
-            },
-            {
-                id: 'exec-sync',
-                title: 'Trace: Thread Synchronization (Lab 9)',
-                lines: [
-                    "class Count {",
-                    "  public synchronized void printCount() {",
-                    "    for(int i=1; i<=3; i++) {",
-                    "      System.out.println(i);",
-                    "    }",
-                    "  }",
-                    "}",
-                    "// main:",
-                    "Count shared = new Count();",
-                    "Thread t1 = new MyThread(shared);",
-                    "Thread t2 = new MyThread(shared);",
-                    "t1.start(); t2.start();"
-                ],
+            }
+        },
+        {
+            id: 'encapsulation',
+            title: 'Encapsulation',
+            source: 'Lab 06',
+            icon: Server,
+            simpleDef: 'Hiding data inside a class and protecting it with private variables and public getters/setters.',
+            technicalDef: 'The bundling of data and methods into a single unit, restricting direct access to object state to prevent invalid modifications.',
+            why: 'To prevent outside code from setting invalid values (like a negative bank balance).',
+            syntax: 'private int age;\npublic int getAge() { return age; }\npublic void setAge(int a) { if(a>0) age=a; }',
+            rules: [
+                'Declare variables as private.',
+                'Provide public get/set methods.',
+                'Add validation logic inside the setter.'
+            ],
+            code: {
+                snippet: `class Account {\n    private double amount;\n\n    public void setAmount(double amt) {\n        if(amt > 0) {\n            this.amount = amt;\n        }\n    }\n}\n\nAccount acc = new Account();\n// acc.amount = 5000; // ERROR!\nacc.setAmount(25000.0);`,
                 steps: [
-                    { line: 8, msg: 'Creates ONE shared Count object.', why: 'Both threads will try to access this exact same object in memory.' },
-                    { line: 11, msg: 'Both threads start concurrently.', why: 'The OS scheduler decides who gets to run first.' },
-                    { line: 1, msg: 'Thread 1 enters printCount().', why: 'Because of "synchronized", Thread 1 LOCKS the shared object. Thread 2 is blocked outside.' },
-                    { line: 3, msg: 'Thread 1 prints 1, 2, 3.', why: 'Thread 1 finishes its entire loop without Thread 2 interrupting.' },
-                    { line: 5, msg: 'Thread 1 exits method and unlocks.', why: 'The lock is released. Thread 2 is now allowed to enter.' },
-                    { line: 1, msg: 'Thread 2 enters printCount().', why: 'Thread 2 acquires the lock and begins its execution.' }
+                    { line: 1, desc: 'Data Hiding', text: 'amount is private. Cannot be accessed directly from outside.' },
+                    { line: 3, desc: 'Public Interface', text: 'Setter method is the ONLY way to modify the data.' },
+                    { line: 4, desc: 'Validation', text: 'Prevents negative deposits.' },
+                    { line: 11, desc: 'Blocked Access', text: 'Direct access causes a compile error.' },
+                    { line: 12, desc: 'Safe Update', text: 'Uses the setter to safely update internal state.' }
                 ]
             }
-        ];
-
-        const comparisons = [
-            { a: '==', b: '.equals()', diff: '== compares memory addresses (locations). .equals() compares actual text characters.', trick: '== is for Location, .equals() is for Letters.' },
-            { a: 'String', b: 'StringBuilder', diff: 'String cannot be changed (Immutable). StringBuilder modifies its internal buffer (Mutable).', trick: 'String is Stubborn. Builder is Building.' },
-            { a: 'throw', b: 'throws', diff: 'throw is inside the method to cause an error. throws is on the method signature as a warning.', trick: 'throw is the Action. throws is the Warning.' },
-            { a: 'start()', b: 'run()', diff: 'start() spawns a new background thread. run() executes code synchronously on the current main thread.', trick: 'Only start() actually multithreads.' },
-            { a: 'extends Thread', b: 'implements Runnable', diff: 'Extending Thread uses up your single inheritance. Runnable leaves your class free to extend something else.', trick: 'Runnable is more Flexible.' }
-        ];
-
-        const labsData = [
-            {
-                id: 8,
-                title: 'Lab 08: Exception Handling',
-                icon: 'fa-triangle-exclamation',
-                color: 'text-orange-500',
-                topics: [
-                    { name: 'Checked vs Unchecked', rule: 'Checked (File I/O) caught at compile time. Unchecked (Math/Input) caught at runtime.', code: `try {\n  File f = new File("test.txt");\n  FileReader fr = new FileReader(f);\n} catch (FileNotFoundException e) {\n  System.out.println("File missing!");\n}`, explanation: 'The compiler forces us to handle this because reading a file from disk is risky—it might not exist. This is a Checked Exception.' },
-                    { name: 'User-Defined Exceptions', rule: 'Extend Exception class and call super(String) in constructor.', code: `class InvalidWeightException extends Exception {\n  InvalidWeightException(String s) {\n    super(s);\n  }\n}`, explanation: 'We create our own rule. Calling super(s) ensures the message is stored correctly in the parent Exception class so e.getMessage() works.' }
-                ]
-            },
-            {
-                id: 9,
-                title: 'Lab 09: Threads & Sync',
-                icon: 'fa-layer-group',
-                color: 'text-blue-500',
-                topics: [
-                    { name: 'Creating Threads', rule: 'Always override run(), but call start() to execute.', code: `class SubjectThread extends Thread {\n  public void run() { /* logic */ }\n}\n\nSubjectThread t1 = new SubjectThread();\nt1.start();`, explanation: 'start() tells the OS to create a parallel execution path.' },
-                    { name: 'Synchronization', rule: 'Locks the shared resource to prevent data corruption.', code: `public synchronized void printCount() {\n  // only one thread inside at a time\n}`, explanation: 'Prevents Thread A and Thread B from modifying or printing data at the exact same time, which causes corrupted/jumbled output.' }
-                ]
-            },
-            {
-                id: 10,
-                title: 'Lab 10: Strings & Builders',
-                icon: 'fa-font',
-                color: 'text-purple-500',
-                topics: [
-                    { name: 'String Immutability', rule: 'Methods return new strings, they do not alter the original.', code: `String name = "Nimal";\nname.concat(" Perera");\n// name is STILL "Nimal"\nname = name.concat(" Perera"); // Now it updates`, explanation: 'Methods like concat(), trim(), toLowerCase() return brand new strings. They do not alter the original string in memory.' },
-                    { name: 'StringBuilder Masking', rule: 'Use substring() and concat() to mask data.', code: `String firstTwo = acc.substring(0, 2);\nString lastTwo = acc.substring(acc.length() - 2);\nString masked = firstTwo.concat("******").concat(lastTwo);`, explanation: 'substring(0, 2) gets indexes 0 and 1. We chain concat() to build the final masked bank account string.' }
-                ]
-            },
-            {
-                id: 11,
-                title: 'Lab 11: File I/O',
-                icon: 'fa-folder-open',
-                color: 'text-green-500',
-                topics: [
-                    { name: 'File Paths & Checks', rule: 'File object is an abstract path. Always check .exists()', code: `File f = new File("D:\\\\test.txt");\nif(f.exists() && f.canRead()) {\n  // safe to proceed\n}`, explanation: 'Creating a File object does not create a file on disk. You must use .exists() and .canRead() to verify it.' },
-                    { name: 'Reading with ArrayList', rule: 'Use BufferedReader for lines, ArrayList for dynamic storage.', code: `List<String> list = new ArrayList<String>();\nBufferedReader reader = new BufferedReader(new FileReader(f));\nString line;\nwhile ((line = reader.readLine()) != null) {\n  list.add(line);\n}`, explanation: 'Reads text line by line until it hits the end of the file (null). We store in ArrayList because we don\'t know the file size in advance.' }
+        },
+        {
+            id: 'inheritance',
+            title: 'Inheritance & super()',
+            source: 'Lab 06',
+            icon: Server,
+            simpleDef: 'A child class gets all the features of a parent class, saving you from writing the same code twice.',
+            technicalDef: 'A mechanism where a subclass acquires properties and behaviors of a superclass, establishing an IS-A relationship.',
+            why: 'Code reusability. If Desktop and Laptop share PC properties, put them in PC and inherit.',
+            syntax: 'class Child extends Parent {\n  Child() { super(); }\n}',
+            rules: [
+                'Use "extends" keyword. Java supports Single, not Multiple inheritance (with classes).',
+                'Constructors are NOT inherited.',
+                'The first line of a child constructor always calls the parent constructor implicitly via super().'
+            ],
+            code: {
+                snippet: `class PC {\n    PC() {\n        System.out.println("PC Setup");\n    }\n}\n\nclass Laptop extends PC {\n    Laptop() {\n        super(); // Implicit if omitted\n        System.out.println("Laptop Setup");\n    }\n}\n\nLaptop myLap = new Laptop();`,
+                steps: [
+                    { line: 6, desc: 'Inheritance', text: 'Laptop IS-A PC.' },
+                    { line: 13, desc: 'Instantiation', text: 'Laptop constructor is called.' },
+                    { line: 8, desc: 'Super Call', text: 'Child MUST setup parent first. super() jumps to PC constructor.' },
+                    { line: 2, desc: 'Parent Setup', text: 'PC constructor runs.' },
+                    { line: 9, desc: 'Child Setup', text: 'Laptop constructor finishes.' }
                 ]
             }
-        ];
+        }
+    ]
+};
 
+const cheatSheet = [
+    { term: 'Class', def: 'Blueprint for objects.' },
+    { term: 'Object', def: 'Runtime instance of a class.' },
+    { term: 'Constructor', def: 'Block invoked on object creation. No return type. Matches class name.' },
+    { term: 'this', def: 'Refers to the current object executing the method.' },
+    { term: 'super', def: 'Refers to the immediate parent class.' },
+    { term: 'Overloading', def: 'Same method name, different parameters (Compile-time polymorphism).' },
+    { term: 'Overriding', def: 'Child provides specific implementation for parent method (Runtime polymorphism).' },
+    { term: 'final', def: 'Variable: constant. Method: cannot override. Class: cannot inherit.' },
+    { term: 'static', def: 'Belongs to the Class, shared by all objects.' },
+    { term: 'String Pool', def: 'Special memory area for immutable string literals.' },
+];
 
-        // Helper components
-        const SectionHeader = ({ icon, title, subtitle, colorClass = "text-blue-500" }) => (
-            <div className="mb-8">
-                <h2 className="text-3xl font-bold flex items-center text-slate-800 dark:text-white">
-                    <i className={`fas ${icon} ${colorClass} mr-3`}></i> {title}
-                </h2>
-                {subtitle && <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium text-lg">{subtitle}</p>}
-            </div>
-        );
+const highlightCode = (code) => {
+    return code
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\b(class|public|private|protected|static|void|int|double|String|boolean|new|if|else|while|for|try|catch|finally|throw|throws|extends|implements|interface|abstract|return|this|super)\b/g, '<span class="token keyword">$1</span>')
+        .replace(/\b(System\.out\.println|System\.out\.print|Exception|ArithmeticException|Thread|Runnable|Scanner|File|ArrayList)\b/g, '<span class="token type">$1</span>')
+        .replace(/("[^"]*")/g, '<span class="token string">$1</span>')
+        .replace(/(\/\/.*)/g, '<span class="token comment">$1</span>');
+};
 
-        // Core Views
-        const Dashboard = ({ setTab }) => (
-            <div className="space-y-8 fade-in">
-                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-10 rounded-3xl shadow-lg text-white text-center relative overflow-hidden">
-                    <div className="absolute top-0 right-0 opacity-10 text-9xl transform translate-x-1/4 -translate-y-1/4"><i className="fab fa-java"></i></div>
-                    <h1 className="text-4xl md:text-5xl font-extrabold mb-4 relative z-10">OOP Java Learning Hub</h1>
-                    <p className="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto font-medium relative z-10">
-                        Understand Theory <i className="fas fa-arrow-right mx-2 text-sm opacity-70"></i> 
-                        Read Code <i className="fas fa-arrow-right mx-2 text-sm opacity-70"></i> 
-                        Trace Execution
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-4 mt-8 relative z-10">
-                        <button onClick={()=>setTab('theory')} className="bg-white text-blue-700 hover:bg-blue-50 px-6 py-3 rounded-xl font-bold transition shadow-md flex items-center">
-                            <i className="fas fa-book-open mr-2"></i> Start Theory
-                        </button>
-                        <button onClick={()=>setTab('code')} className="bg-blue-800 hover:bg-blue-900 text-white px-6 py-3 rounded-xl font-bold transition shadow-md border border-blue-500 flex items-center">
-                            <i className="fas fa-code mr-2"></i> Code Learner
-                        </button>
-                    </div>
-                </div>
+const ExecutionTracer = ({ codeObj }) => {
+    const [stepIndex, setStepIndex] = useState(-1);
+    const lines = codeObj.snippet.split('\n');
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[
-                        { id: 'theory', icon: 'fa-brain', title: 'Theory & Rules', desc: 'Syntax, concepts, and why we use them', color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' },
-                        { id: 'code', icon: 'fa-laptop-code', title: 'Code Breakdown', desc: 'Interactive token-by-token explanation', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' },
-                        { id: 'labs', icon: 'fa-flask', title: 'Lab Materials', desc: 'Labs 8, 9, 10, 11 explained', color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-900/30' },
-                        { id: 'cheat', icon: 'fa-fire', title: 'Quick Revision', desc: 'Comparisons & 10-min exam prep', color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-900/30' }
-                    ].map(card => (
-                        <div key={card.id} onClick={() => setTab(card.id)} className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all group">
-                            <div className={`${card.bg} ${card.color} w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform`}>
-                                <i className={`fas ${card.icon}`}></i>
-                            </div>
-                            <h3 className="font-bold text-slate-800 dark:text-slate-200 text-lg">{card.title}</h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{card.desc}</p>
+    const nextStep = () => { if (stepIndex < codeObj.steps.length - 1) setStepIndex(stepIndex + 1); };
+    const prevStep = () => { if (stepIndex > -1) setStepIndex(stepIndex - 1); };
+    const reset = () => setStepIndex(-1);
+
+    const activeStep = stepIndex >= 0 ? codeObj.steps[stepIndex] : null;
+
+    return (
+        <div className="flex flex-col lg:flex-row gap-4 mt-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+            <div className="w-full lg:w-3/5 font-mono text-sm overflow-x-auto bg-[#282c34] text-[#abb2bf] p-4 relative">
+                <div className="absolute top-2 right-4 text-xs text-slate-400 font-sans font-semibold">EXECUTION FLOW</div>
+                <pre className="mt-4">
+                    {lines.map((line, idx) => (
+                        <div key={idx} className={`code-line px-2 py-0.5 ${activeStep && activeStep.line === idx ? 'active' : ''}`}>
+                            <span className="text-slate-600 mr-4 select-none w-6 inline-block text-right">{idx + 1}</span>
+                            <span dangerouslySetInnerHTML={{ __html: highlightCode(line) }} />
                         </div>
                     ))}
-                </div>
+                </pre>
+            </div>
 
-                <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                    <h3 className="text-xl font-bold mb-6 flex items-center text-slate-800 dark:text-white">
-                        <i className="fas fa-list-ol mr-3 text-indigo-500"></i> How to Read Java OOP Code
+            <div className="w-full lg:w-2/5 p-6 flex flex-col justify-between">
+                <div>
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
+                        <Play className="text-sky-500 w-5 h-5" /> Trace Execution
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-                        {['Find the Classes: Look for blueprints.', 'Find Fields: What data does it hold?', 'Find Constructors: How is it born?', 'Relationships: extends or implements?', 'Trace "main": Where execution starts.', 'Track "new": Visualize objects in memory.', 'Follow Calls: Jump to method definitions.', 'Identify Output: Note printlns mentally.'].map((step, i) => (
-                            <div key={i} className="flex items-start">
-                                <div className="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm mr-3 shrink-0">{i+1}</div>
-                                <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{step}</p>
-                            </div>
-                        ))}
-                    </div>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
+                        Press Next Step to follow the JVM execution line by line.
+                    </p>
+
+                    {activeStep ? (
+                        <div className="bg-sky-50 dark:bg-sky-900/30 border border-sky-100 dark:border-sky-800 p-4 rounded-lg">
+                            <span className="inline-block px-2 py-1 bg-sky-500 text-white text-xs font-bold rounded mb-2 uppercase tracking-wide">
+                                {activeStep.desc}
+                            </span>
+                            <p className="text-slate-700 dark:text-slate-200 font-medium">{activeStep.text}</p>
+                        </div>
+                    ) : (
+                        <div className="p-4 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 text-center text-slate-400 dark:text-slate-500">
+                            Click Start to begin tracing.
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex gap-2 mt-6">
+                    <button onClick={reset} className="px-4 py-2 text-sm font-semibold rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                        Reset
+                    </button>
+                    <button onClick={prevStep} disabled={stepIndex < 0} className="px-4 py-2 text-sm font-semibold rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50">
+                        Prev
+                    </button>
+                    <button onClick={nextStep} disabled={stepIndex >= codeObj.steps.length - 1} className="flex-1 px-4 py-2 text-sm font-semibold rounded bg-sky-500 text-white hover:bg-sky-600 transition-colors disabled:opacity-50 shadow-md shadow-sky-500/20">
+                        {stepIndex === -1 ? 'Start Trace' : 'Next Step'}
+                    </button>
                 </div>
             </div>
-        );
+        </div>
+    );
+};
 
-        const TheoryViewer = () => (
-            <div className="space-y-8 fade-in">
-                <SectionHeader icon="fa-book" title="Theory Modules" subtitle="Core concepts simplified from your lectures and lab sheets." />
-                
-                {theoryData.map(concept => (
-                    <div key={concept.id} className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center">
-                            <i className="fas fa-caret-right mr-3 text-slate-400"></i> {concept.title}
+const TopicView = ({ topic }) => {
+    return (
+        <div className="pb-20">
+            <div className="mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-sky-500">{topic.source}</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight flex items-center gap-3">
+                {React.createElement(topic.icon || Code, { className: "w-8 h-8 text-sky-500" })}
+                {topic.title}
+            </h1>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Simple Explanation</h3>
+                    <p className="text-lg text-slate-700 dark:text-slate-200">{topic.simpleDef}</p>
+                    
+                    <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-6 mb-2">Technical Definition</h3>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm">{topic.technicalDef}</p>
+                </div>
+
+                <div className="bg-sky-50 dark:bg-slate-800/50 p-6 rounded-xl border border-sky-100 dark:border-slate-700 shadow-sm flex flex-col justify-center">
+                    <h3 className="text-sm font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <Zap className="w-4 h-4" /> Why do we use it?
+                    </h3>
+                    <p className="text-slate-700 dark:text-slate-300 font-medium">{topic.why}</p>
+                </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+                <div className="md:col-span-1 bg-slate-900 rounded-xl p-5 shadow-sm text-slate-300">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Syntax Pattern</h3>
+                    <pre className="text-sm font-mono overflow-x-auto whitespace-pre-wrap"><code dangerouslySetInnerHTML={{__html: highlightCode(topic.syntax)}}></code></pre>
+                </div>
+                <div className="md:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Important Rules</h3>
+                    <ul className="space-y-3">
+                        {topic.rules.map((rule, idx) => (
+                            <li key={idx} className="flex gap-3 text-slate-700 dark:text-slate-300">
+                                <div className="mt-1 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 text-xs font-bold">{idx + 1}</div>
+                                <span>{rule}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+
+            {topic.commonMistake && (
+                <div className="mb-8 border border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-900/10 rounded-xl overflow-hidden shadow-sm">
+                    <div className="bg-orange-100 dark:bg-orange-900/30 px-4 py-2 border-b border-orange-200 dark:border-orange-900/50 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                        <span className="font-bold text-orange-800 dark:text-orange-300 text-sm uppercase tracking-wider">Common Exam Trap</span>
+                    </div>
+                    <div className="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                            <div className="text-xs font-bold text-red-500 mb-1">INCORRECT</div>
+                            <pre className="text-sm font-mono bg-white dark:bg-slate-900 p-3 rounded border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"><code dangerouslySetInnerHTML={{__html: highlightCode(topic.commonMistake.wrong)}}></code></pre>
+                        </div>
+                        <div className="flex flex-col justify-center">
+                            <div className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">Why is this wrong?</div>
+                            <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{topic.commonMistake.why}</p>
+                            <div className="text-xs font-bold text-green-600 dark:text-green-500 mb-1">CORRECT APPROACH</div>
+                            <pre className="text-sm font-mono bg-white dark:bg-slate-900 p-3 rounded border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"><code dangerouslySetInnerHTML={{__html: highlightCode(topic.commonMistake.right)}}></code></pre>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-12 mb-4">Code Execution Analysis</h2>
+            <ExecutionTracer codeObj={topic.code} />
+        </div>
+    );
+};
+
+const Dashboard = ({ setView }) => (
+    <div className="pb-10">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">Assignment Prep Dashboard</h1>
+        <p className="text-slate-600 dark:text-slate-400 mb-8 text-lg">Targeting Exceptions, Threads, Strings, and File I/O for the Sept 18th exam.</p>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+                <div className="text-3xl font-black text-sky-500 mb-1">11</div>
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Labs Analyzed</div>
+            </div>
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+                <div className="text-3xl font-black text-sky-500 mb-1">4</div>
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Priority Topics</div>
+            </div>
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+                <div className="text-3xl font-black text-sky-500 mb-1">7</div>
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Execution Traces</div>
+            </div>
+            <div className="bg-gradient-to-br from-sky-500 to-sky-700 p-4 rounded-xl shadow-md text-center text-white cursor-pointer hover:shadow-lg transition-all transform hover:-translate-y-1" onClick={() => setView({type: 'cheatSheet'})}>
+                <div className="text-3xl font-black mb-1 flex justify-center"><Zap className="w-8 h-8" /></div>
+                <div className="text-xs font-bold uppercase tracking-wide">Quick Revision</div>
+            </div>
+        </div>
+
+        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">Priority Assignment Topics</h2>
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
+            {curriculum.assignment_focus.map(topic => (
+                <div key={topic.id} onClick={() => setView({ type: 'topic', id: topic.id })} className="group bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-sky-300 dark:hover:border-sky-600 cursor-pointer transition-all">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors flex items-center gap-2">
+                            {React.createElement(topic.icon || Code, { className: "w-5 h-5 text-sky-500" })}
+                            {topic.title}
                         </h3>
-                        
-                        <div className="bg-blue-50 dark:bg-blue-900/20 p-5 rounded-xl border-l-4 border-blue-500 mb-6">
-                            <span className="text-xs font-bold uppercase text-blue-700 dark:text-blue-400 mb-2 block tracking-wider">Simple Explanation</span>
-                            <p className="text-slate-800 dark:text-slate-200 font-medium">{concept.simple}</p>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-6 mb-6">
-                            <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center"><i className="fas fa-circle-question text-purple-500 mr-2"></i> Why do we use it?</h4>
-                                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{concept.why}</p>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center"><i className="fas fa-list-check text-green-500 mr-2"></i> Important Rules</h4>
-                                <ul className="space-y-2">
-                                    {concept.rules.map((rule, i) => (
-                                        <li key={i} className="flex text-sm text-slate-600 dark:text-slate-400">
-                                            <i className="fas fa-check text-green-500 mt-1 mr-2 text-xs"></i> <span>{rule}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div className="mb-6">
-                            <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center"><i className="fas fa-code text-slate-500 mr-2"></i> Syntax Pattern</h4>
-                            <pre className="bg-[#1e1e1e] text-green-400 p-4 rounded-xl font-mono text-sm overflow-x-auto shadow-inner border border-slate-800">
-                                <code>{concept.syntax}</code>
-                            </pre>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 p-5 rounded-xl">
-                                <span className="text-xs font-bold uppercase text-red-600 dark:text-red-400 mb-3 flex items-center"><i className="fas fa-triangle-exclamation mr-2"></i> Common Mistake</span>
-                                <div className="line-through text-red-500/80 font-mono text-sm mb-2">{concept.mistake.wrong}</div>
-                                <div className="text-green-600 dark:text-green-400 font-mono text-sm mb-3 font-bold">{concept.mistake.right}</div>
-                                <p className="text-xs text-slate-700 dark:text-slate-300"><b>Why?</b> {concept.mistake.why}</p>
-                            </div>
-                            <div className="border border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-900/10 p-5 rounded-xl flex flex-col justify-center items-center text-center">
-                                <i className="fas fa-lightbulb text-amber-500 text-2xl mb-2"></i>
-                                <span className="text-xs font-bold uppercase text-amber-600 dark:text-amber-400 mb-2">Memory Trick</span>
-                                <p className="font-bold text-amber-900 dark:text-amber-200">"{concept.memory}"</p>
-                            </div>
-                        </div>
+                        <span className="text-[10px] font-bold px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded">{topic.source}</span>
                     </div>
-                ))}
-            </div>
-        );
+                    <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{topic.simpleDef}</p>
+                </div>
+            ))}
+        </div>
 
-        const CodeLearner = () => {
-            const [activeBreakdown, setActiveBreakdown] = useState(0);
-            const [activeToken, setActiveToken] = useState(null);
-            const data = codeBreakdowns[activeBreakdown];
+        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">Core OOP Foundations</h2>
+        <div className="grid md:grid-cols-3 gap-4">
+            {curriculum.foundations.map(topic => (
+                <div key={topic.id} onClick={() => setView({ type: 'topic', id: topic.id })} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer transition-all">
+                    <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-2">
+                        {React.createElement(topic.icon || Server, { className: "w-4 h-4 text-slate-400" })}
+                        {topic.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{topic.simpleDef}</p>
+                </div>
+            ))}
+        </div>
+    </div>
+);
 
-            const renderInteractiveCode = () => {
-                let codeHtml = data.code;
-                data.tokens.forEach((t, index) => {
-                    // Escape regex chars
-                    const safeText = t.token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(`(${safeText})`, 'g');
-                    codeHtml = codeHtml.replace(regex, `%%TOKEN_${index}%%$1%%END_TOKEN%%`);
-                });
-
-                const parts = codeHtml.split(/(%%TOKEN_\d+%%.*?%%END_TOKEN%%)/);
-                
-                return parts.map((part, i) => {
-                    const match = part.match(/%%TOKEN_(\d+)%%(.*?)%%END_TOKEN%%/s);
-                    if (match) {
-                        const tokenIdx = parseInt(match[1]);
-                        const content = match[2];
-                        const isActive = activeToken === tokenIdx;
-                        return (
-                            <span 
-                                key={i} 
-                                className={`code-token ${isActive ? 'active' : ''}`}
-                                onClick={() => setActiveToken(tokenIdx)}
-                            >{content}</span>
-                        );
-                    }
-                    return <span key={i}>{part}</span>;
-                });
-            };
-
-            return (
-                <div className="space-y-8 fade-in">
-                    <SectionHeader icon="fa-laptop-code" title="Code Breakdown" subtitle="Click highlighted parts of the code to understand exactly what they do." />
-                    
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {codeBreakdowns.map((cb, i) => (
-                            <button 
-                                key={cb.id} 
-                                onClick={() => { setActiveBreakdown(i); setActiveToken(null); }}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${activeBreakdown === i ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'}`}
-                            >
-                                {cb.title}
-                            </button>
-                        ))}
+const CheatSheet = () => (
+    <div className="pb-20">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">Must Remember</h1>
+        <p className="text-slate-600 dark:text-slate-400 mb-8">High-yield definitions for quick exam revision. 5 minutes before the paper.</p>
+        
+        <div className="grid md:grid-cols-2 gap-4">
+            {cheatSheet.map((item, i) => (
+                <div key={i} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex gap-4 items-start">
+                    <div className="bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 p-2 rounded-lg shrink-0">
+                        <Zap className="w-5 h-5" />
                     </div>
-
-                    <div className="flex flex-col lg:flex-row gap-6 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <div className="flex-1 overflow-hidden">
-                            <pre className="bg-[#1e1e1e] text-slate-300 p-6 rounded-xl overflow-x-auto font-mono text-sm leading-loose shadow-inner">
-                                <code>{renderInteractiveCode()}</code>
-                            </pre>
-                            <p className="text-xs text-slate-500 mt-3 flex items-center">
-                                <i className="fas fa-hand-pointer mr-2"></i> Click highlighted text above.
-                            </p>
-                        </div>
-                        
-                        <div className="w-full lg:w-1/3 flex flex-col">
-                            {activeToken !== null ? (
-                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 p-5 rounded-xl h-full flex flex-col">
-                                    <div className="font-mono text-sm text-blue-700 dark:text-blue-400 font-bold mb-4 pb-3 border-b border-blue-200 dark:border-blue-800/50">
-                                        {data.tokens[activeToken].token}
-                                    </div>
-                                    <p className="text-slate-800 dark:text-slate-200 text-sm font-medium leading-relaxed mb-6">
-                                        {data.tokens[activeToken].explain}
-                                    </p>
-                                    <div className="mt-auto bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                                        <span className="font-bold text-purple-600 dark:text-purple-400 block mb-1 text-xs uppercase flex items-center"><i className="fas fa-circle-question mr-1"></i> Why?</span>
-                                        <p className="text-xs text-slate-600 dark:text-slate-400">{data.tokens[activeToken].why}</p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="h-full border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center p-8 text-slate-400 text-center">
-                                    <i className="fas fa-mouse-pointer text-3xl mb-3 opacity-50"></i>
-                                    <p className="text-sm font-medium">Select a code segment on the left to see its explanation here.</p>
-                                </div>
-                            )}
-                        </div>
+                    <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white font-mono text-sm">{item.term}</h3>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mt-1 leading-relaxed">{item.def}</p>
                     </div>
                 </div>
-            );
-        };
+            ))}
+        </div>
+    </div>
+);
 
-        const ExecutionTracer = () => {
-            const [activeTrace, setActiveTrace] = useState(0);
-            const [step, setStep] = useState(0);
-            const data = executionTraces[activeTrace];
+const App = () => {
+    const [view, setView] = useState({ type: 'dashboard' }); 
+    const [darkMode, setDarkMode] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-            return (
-                <div className="space-y-8 fade-in mt-12">
-                    <SectionHeader icon="fa-play-circle" title="Execution Flow" subtitle="Trace the code line-by-line to see how Java runs it." colorClass="text-green-500" />
-                    
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {executionTraces.map((et, i) => (
-                            <button 
-                                key={et.id} 
-                                onClick={() => { setActiveTrace(i); setStep(0); }}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${activeTrace === i ? 'bg-green-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'}`}
-                            >
-                                {et.title}
-                            </button>
-                        ))}
-                    </div>
+    useEffect(() => {
+        if (darkMode) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+    }, [darkMode]);
 
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
-                                <i className="fas fa-forward-step text-green-500 mr-2"></i> Step {step + 1} of {data.steps.length}
-                            </h3>
-                            <div className="flex items-center gap-2">
-                                <button onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg disabled:opacity-50 hover:bg-slate-200 dark:hover:bg-slate-600 font-bold transition">Prev</button>
-                                <button onClick={() => setStep(Math.min(data.steps.length - 1, step + 1))} disabled={step === data.steps.length - 1} className="px-4 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50 hover:bg-green-700 font-bold transition shadow-sm">Next</button>
-                            </div>
-                        </div>
+    let currentTopicData = null;
+    if (view.type === 'topic') {
+        const allTopics = [...curriculum.foundations, ...curriculum.assignment_focus];
+        currentTopicData = allTopics.find(t => t.id === view.id);
+    }
 
-                        <div className="flex flex-col lg:flex-row gap-6">
-                            <div className="flex-1 bg-[#1e1e1e] rounded-xl py-4 font-mono text-sm overflow-hidden shadow-inner">
-                                {data.lines.map((line, idx) => {
-                                    const isActive = data.steps[step].line === idx;
-                                    return (
-                                        <div key={idx} className={`flex px-4 py-1.5 transition-colors duration-200 ${isActive ? 'bg-green-900/40 border-l-4 border-green-500 text-white font-bold' : 'border-l-4 border-transparent text-slate-400'}`}>
-                                            <span className="w-6 text-right mr-4 opacity-50 select-none">{idx + 1}</span>
-                                            <span>{line}</span>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                            
-                            <div className="w-full lg:w-1/3 flex flex-col gap-4">
-                                <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30 p-5 rounded-xl">
-                                    <span className="text-xs font-bold uppercase text-green-700 dark:text-green-400 mb-2 block flex items-center"><i className="fas fa-bolt mr-2"></i> What's happening?</span>
-                                    <p className="text-slate-800 dark:text-slate-200 text-sm font-medium">{data.steps[step].msg}</p>
-                                </div>
-                                <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 p-5 rounded-xl">
-                                    <span className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-2 block flex items-center"><i className="fas fa-info-circle mr-2"></i> Why?</span>
-                                    <p className="text-slate-600 dark:text-slate-400 text-sm">{data.steps[step].why}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const LabViewer = () => {
-            const [activeLab, setActiveLab] = useState(8);
+    const NavLinks = () => (
+        <>
+            <button onClick={() => { setView({type: 'dashboard'}); setMobileMenuOpen(false); }} className={`w-full text-left px-4 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-3 ${view.type === 'dashboard' ? 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+                <Home className="w-4 h-4" /> Dashboard
+            </button>
             
-            return (
-                <div className="space-y-8 fade-in">
-                    <SectionHeader icon="fa-flask" title="Lab Code Viewer" subtitle="Practical implementations from Labs 8, 9, 10, and 11." colorClass="text-green-500"/>
-                    
-                    <div className="flex flex-wrap gap-2 pb-2">
-                        {labsData.map(lab => (
-                            <button 
-                                key={lab.id}
-                                onClick={() => setActiveLab(lab.id)}
-                                className={`px-5 py-2.5 rounded-xl font-bold transition shadow-sm border ${activeLab === lab.id ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
-                            >
-                                Lab {lab.id < 10 ? '0'+lab.id : lab.id}
-                            </button>
-                        ))}
-                    </div>
+            <div className="mt-6 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Assignment Focus</div>
+            {curriculum.assignment_focus.map(topic => (
+                <button key={topic.id} onClick={() => { setView({type: 'topic', id: topic.id}); setMobileMenuOpen(false); }} className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors truncate flex items-center gap-2 ${view.type === 'topic' && view.id === topic.id ? 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+                    {React.createElement(topic.icon || Code, { className: "w-4 h-4" })}
+                    {topic.title}
+                </button>
+            ))}
 
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        {labsData.filter(l => l.id === activeLab).map(lab => (
-                            <div key={lab.id}>
-                                <div className="bg-slate-50 dark:bg-slate-900/50 p-6 md:p-8 border-b border-slate-200 dark:border-slate-700">
-                                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center">
-                                        <i className={`fas ${lab.icon} ${lab.color} mr-3`}></i> {lab.title}
-                                    </h2>
-                                </div>
-                                <div className="p-6 md:p-8 space-y-10">
-                                    {lab.topics.map((topic, i) => (
-                                        <div key={i} className="flex flex-col lg:flex-row gap-8 pb-10 border-b border-slate-100 dark:border-slate-700 last:border-0 last:pb-0">
-                                            <div className="lg:w-1/3">
-                                                <h4 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-4">{topic.name}</h4>
-                                                <div className="bg-slate-50 dark:bg-slate-900/50 text-sm p-5 rounded-xl border border-slate-200 dark:border-slate-700">
-                                                    <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center"><i className="fas fa-scale-balanced mr-2"></i> Key Rule</div>
-                                                    <p className="text-slate-700 dark:text-slate-300 font-medium">{topic.rule}</p>
-                                                </div>
-                                            </div>
-                                            <div className="lg:w-2/3 flex flex-col gap-4">
-                                                <pre className="bg-[#1e1e1e] text-slate-300 p-5 rounded-xl font-mono text-sm overflow-x-auto shadow-inner border border-slate-800">
-                                                    <code>{topic.code}</code>
-                                                </pre>
-                                                <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 p-5 rounded-xl">
-                                                    <span className="font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wide text-xs mb-2 block flex items-center"><i className="fas fa-lightbulb mr-2"></i> Execution & Why</span>
-                                                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{topic.explanation}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+            <div className="mt-6 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Core OOP</div>
+            {curriculum.foundations.map(topic => (
+                <button key={topic.id} onClick={() => { setView({type: 'topic', id: topic.id}); setMobileMenuOpen(false); }} className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors truncate flex items-center gap-2 ${view.type === 'topic' && view.id === topic.id ? 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+                    {React.createElement(topic.icon || Code, { className: "w-4 h-4" })}
+                    {topic.title}
+                </button>
+            ))}
+
+            <button onClick={() => { setView({type: 'cheatSheet'}); setMobileMenuOpen(false); }} className={`mt-6 w-full text-left px-4 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-3 ${view.type === 'cheatSheet' ? 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+                <Book className="w-4 h-4" /> Quick Revision
+            </button>
+        </>
+    );
+
+    return (
+        <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 font-sans">
+            <GlobalStyles />
+            
+            {/* Mobile Header */}
+            <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20">
+                <div className="font-bold text-xl tracking-tight text-slate-800 dark:text-white flex items-center gap-2">
+                    <div className="bg-sky-500 text-white p-1.5 rounded"><Code className="w-5 h-5" /></div>
+                    OOP Learner
                 </div>
-            );
-        };
-
-        const CheatSheet = () => (
-            <div className="space-y-8 fade-in">
-                <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-8 md:p-10 rounded-3xl shadow-lg relative overflow-hidden">
-                    <i className="fas fa-fire absolute right-0 top-0 text-9xl opacity-10 transform translate-x-1/4 -translate-y-1/4"></i>
-                    <h2 className="text-3xl md:text-4xl font-extrabold mb-3 relative z-10">Last-Minute Revision</h2>
-                    <p className="text-lg opacity-90 font-medium relative z-10">Read this 10 minutes before walking into the exam hall.</p>
-                </div>
-                
-                <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                    <h3 className="text-xl font-bold mb-6 text-slate-800 dark:text-white flex items-center border-b border-slate-100 dark:border-slate-700 pb-4">
-                        <i className="fas fa-not-equal text-orange-500 mr-3"></i> Confusing Concepts Compared
-                    </h3>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
-                                <tr>
-                                    <th className="py-3 px-4 rounded-tl-lg font-bold">Concept A</th>
-                                    <th className="py-3 px-4 font-bold">Concept B</th>
-                                    <th className="py-3 px-4 font-bold">Main Difference</th>
-                                    <th className="py-3 px-4 rounded-tr-lg font-bold">Memory Trick</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {comparisons.map((c, i) => (
-                                    <tr key={i} className="border-b border-slate-100 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                                        <td className="py-4 px-4 font-mono font-bold text-blue-600 dark:text-blue-400">{c.a}</td>
-                                        <td className="py-4 px-4 font-mono font-bold text-purple-600 dark:text-purple-400">{c.b}</td>
-                                        <td className="py-4 px-4 text-slate-700 dark:text-slate-300">{c.diff}</td>
-                                        <td className="py-4 px-4 text-orange-600 dark:text-orange-400 font-medium italic text-xs">{c.trick}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <h3 className="text-lg font-bold mb-6 text-red-600 dark:text-red-400 flex items-center">
-                            <i className="fas fa-circle-xmark mr-2"></i> Fatal Exam Mistakes
-                        </h3>
-                        <ul className="space-y-4">
-                            <li className="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-100 dark:border-red-900/30">
-                                <span className="font-bold text-slate-800 dark:text-slate-200 block mb-1">Using t1.run() instead of t1.start()</span>
-                                <span className="text-sm text-slate-600 dark:text-slate-400">run() does not create a thread. It just runs the method synchronously. Always use start().</span>
-                            </li>
-                            <li className="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-100 dark:border-red-900/30">
-                                <span className="font-bold text-slate-800 dark:text-slate-200 block mb-1">String comparison with ==</span>
-                                <span className="text-sm text-slate-600 dark:text-slate-400">== checks if they are the exact same object in memory. .equals() checks if the letters match.</span>
-                            </li>
-                            <li className="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-100 dark:border-red-900/30">
-                                <span className="font-bold text-slate-800 dark:text-slate-200 block mb-1">Catching Exception before specific errors</span>
-                                <span className="text-sm text-slate-600 dark:text-slate-400">catch(FileNotFoundException) must be written ABOVE catch(Exception).</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <h3 className="text-lg font-bold mb-6 text-blue-600 dark:text-blue-400 flex items-center">
-                            <i className="fas fa-code mr-2"></i> Boilerplate Signatures
-                        </h3>
-                        <div className="space-y-4">
-                            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <span className="text-xs font-bold text-slate-500 block mb-1 uppercase tracking-wider">Custom Exception</span>
-                                <code className="text-sm text-blue-700 dark:text-blue-300 font-mono">class MyErr extends Exception &#123;<br/>&nbsp;&nbsp;MyErr(String s) &#123; super(s); &#125;<br/>&#125;</code>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <span className="text-xs font-bold text-slate-500 block mb-1 uppercase tracking-wider">Thread Runnable</span>
-                                <code className="text-sm text-purple-700 dark:text-purple-300 font-mono">class Task implements Runnable &#123;<br/>&nbsp;&nbsp;public void run() &#123; ... &#125;<br/>&#125;<br/>new Thread(new Task()).start();</code>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <span className="text-xs font-bold text-slate-500 block mb-1 uppercase tracking-wider">ArrayList Creation</span>
-                                <code className="text-sm text-green-700 dark:text-green-300 font-mono">List&lt;String&gt; list = new ArrayList&lt;&gt;();</code>
-                            </div>
-                        </div>
-                    </div>
+                <div className="flex gap-2">
+                    <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-lg text-slate-500 bg-slate-100 dark:bg-slate-800">
+                        {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    </button>
+                    <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg text-slate-500 bg-slate-100 dark:bg-slate-800">
+                        {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                    </button>
                 </div>
             </div>
-        );
 
-        const App = () => {
-            const [activeTab, setActiveTab] = useState('dashboard');
-            const [theme, setTheme] = useState('light');
-            const [menuOpen, setMenuOpen] = useState(false);
-
-            useEffect(() => {
-                const root = window.document.documentElement;
-                if (theme === 'dark') {
-                    root.classList.add('dark');
-                } else {
-                    root.classList.remove('dark');
-                }
-            }, [theme]);
-
-            const NavItem = ({ id, label, icon }) => (
-                <button 
-                    onClick={() => { setActiveTab(id); setMenuOpen(false); }}
-                    className={`w-full flex items-center p-3.5 mb-2 rounded-xl transition-all duration-200 ${
-                        activeTab === id 
-                        ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/20' 
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold'
-                    }`}
-                >
-                    <i className={`fas ${icon} w-6 text-center mr-2`}></i> {label}
-                </button>
-            );
-
-            return (
-                <div className="flex flex-col md:flex-row min-h-screen">
-                    {/* Mobile Header */}
-                    <div className="md:hidden bg-white dark:bg-slate-900 p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center sticky top-0 z-50">
-                        <div className="font-black text-xl text-blue-600 dark:text-blue-500 flex items-center">
-                            <i className="fab fa-java text-2xl mr-2"></i> OOP Learner
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="text-slate-500 dark:text-slate-400 p-2">
-                                <i className={`fas ${theme === 'light' ? 'fa-moon' : 'fa-sun'} text-xl`}></i>
-                            </button>
-                            <button onClick={() => setMenuOpen(!menuOpen)} className="text-slate-800 dark:text-white p-2">
-                                <i className={`fas ${menuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
-                            </button>
-                        </div>
+            {/* Sidebar Desktop */}
+            <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:block w-full md:w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col h-[calc(100vh-65px)] md:h-screen sticky top-[65px] md:top-0 z-10`}>
+                <div className="hidden md:flex p-6 border-b border-slate-200 dark:border-slate-800 items-center justify-between">
+                    <div className="font-bold text-xl tracking-tight text-slate-800 dark:text-white flex items-center gap-2">
+                        <div className="bg-sky-500 text-white p-1.5 rounded"><Code className="w-5 h-5" /></div>
+                        OOP Learner
                     </div>
-
-                    {/* Sidebar */}
-                    <div className={`${menuOpen ? 'flex' : 'hidden'} md:flex fixed md:static inset-0 top-[69px] md:top-0 z-40 bg-white dark:bg-slate-900 w-full md:w-72 border-r border-slate-200 dark:border-slate-800 flex-col shrink-0`}>
-                        <div className="hidden md:flex font-black text-2xl text-blue-600 dark:text-blue-500 items-center p-6 border-b border-slate-200 dark:border-slate-800">
-                            <i className="fab fa-java text-3xl mr-3"></i> OOP Learner
-                        </div>
-                        <nav className="flex-1 p-4 overflow-y-auto">
-                            <NavItem id="dashboard" label="Dashboard" icon="fa-house" />
-                            <NavItem id="theory" label="Theory & Rules" icon="fa-book" />
-                            <NavItem id="code" label="Code Learner" icon="fa-laptop-code" />
-                            <NavItem id="labs" label="Lab Sheets Viewer" icon="fa-flask" />
-                            <NavItem id="cheat" label="Quick Revision" icon="fa-fire" />
-                        </nav>
-                        <div className="hidden md:flex p-6 border-t border-slate-200 dark:border-slate-800 items-center justify-between">
-                            <span className="text-xs font-bold text-slate-500 uppercase">Theme</span>
-                            <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
-                                <i className={`fas ${theme === 'light' ? 'fa-moon' : 'fa-sun'}`}></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Main Content */}
-                    <div className="flex-1 overflow-y-auto p-4 md:p-10 relative">
-                        <div className="max-w-5xl mx-auto w-full pb-10">
-                            {activeTab === 'dashboard' && <Dashboard setTab={setActiveTab} />}
-                            {activeTab === 'theory' && <TheoryViewer />}
-                            {activeTab === 'code' && (
-                                <div>
-                                    <CodeLearner />
-                                    <ExecutionTracer />
-                                </div>
-                            )}
-                            {activeTab === 'labs' && <LabViewer />}
-                            {activeTab === 'cheat' && <CheatSheet />}
-                        </div>
-                    </div>
+                    <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    </button>
                 </div>
-            );
-        };
+                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                    <NavLinks />
+                </div>
+            </div>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-10 lg:p-12">
+                <div className="max-w-5xl mx-auto">
+                    {view.type === 'dashboard' && <Dashboard setView={setView} />}
+                    {view.type === 'topic' && currentTopicData && <TopicView topic={currentTopicData} />}
+                    {view.type === 'cheatSheet' && <CheatSheet />}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default App;
